@@ -45,10 +45,14 @@ export default async function FicheCandidature({
     { label: "Entreprise", valeur: c.entreprise },
     { label: "Poste", valeur: c.poste },
     { label: "Lieu", valeur: c.lieu ?? "—" },
-    { label: "Date d'envoi", valeur: formatDate(c.date_envoi) },
+    { label: "Type de contrat", valeur: c.type_contrat ?? "—" },
+    { label: "Référence", valeur: c.reference ?? "—" },
+    { label: "Offre publiée le", valeur: formatDate(c.date_publication) },
+    { label: "Candidature envoyée le", valeur: formatDate(c.date_envoi) },
     { label: "Salaire", valeur: formatSalaire(c.salaire_min, c.salaire_max) },
     { label: "Notes", valeur: c.notes || "—" },
-  ];  return (
+  ];
+    return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
         Retour aux candidatures
@@ -76,7 +80,7 @@ export default async function FicheCandidature({
           <dl className="divide-y">
             {champs.map((champ) => (
               <div key={champ.label} className="flex px-5 py-3 text-sm">
-                <dt className="w-40 shrink-0 text-gray-500">{champ.label}</dt>
+                <dt className="w-48 shrink-0 text-gray-500">{champ.label}</dt>
                 <dd className="font-medium">{champ.valeur}</dd>
               </div>
             ))}

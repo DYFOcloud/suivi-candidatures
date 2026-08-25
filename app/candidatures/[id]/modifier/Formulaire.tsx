@@ -6,14 +6,18 @@ import Link from "next/link";
 import { createClient } from "../../../supabase";
 
 const STATUTS = ["À envoyer", "Envoyée", "Entretien RH", "Proposition", "Refus"];
+const CONTRATS = ["CDI", "CDD", "Stage", "Alternance", "Intérim", "Freelance"];
 
 type Candidature = {
   id: string;
   entreprise: string;
   poste: string;
   lieu: string | null;
+  type_contrat: string | null;
   statut: string;
+  date_publication: string | null;
   date_envoi: string | null;
+  reference: string | null;
   salaire_min: number | null;
   salaire_max: number | null;
   url_offre: string | null;
@@ -24,8 +28,11 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
   const [entreprise, setEntreprise] = useState(candidature.entreprise);
   const [poste, setPoste] = useState(candidature.poste);
   const [lieu, setLieu] = useState(candidature.lieu ?? "");
+  const [typeContrat, setTypeContrat] = useState(candidature.type_contrat ?? "");
   const [statut, setStatut] = useState(candidature.statut);
+  const [datePublication, setDatePublication] = useState(candidature.date_publication ?? "");
   const [dateEnvoi, setDateEnvoi] = useState(candidature.date_envoi ?? "");
+  const [reference, setReference] = useState(candidature.reference ?? "");
   const [salaireMin, setSalaireMin] = useState(candidature.salaire_min?.toString() ?? "");
   const [salaireMax, setSalaireMax] = useState(candidature.salaire_max?.toString() ?? "");
   const [urlOffre, setUrlOffre] = useState(candidature.url_offre ?? "");
@@ -52,8 +59,11 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
         entreprise,
         poste,
         lieu: lieu || null,
+        type_contrat: typeContrat || null,
         statut,
+        date_publication: datePublication || null,
         date_envoi: dateEnvoi || null,
+        reference: reference || null,
         salaire_min: salaireMin ? Number(salaireMin) : null,
         salaire_max: salaireMax ? Number(salaireMax) : null,
         url_offre: urlOffre || null,
@@ -72,11 +82,10 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
 
   const champ = "w-full rounded border px-3 py-2 text-sm";
   const label = "block text-sm font-medium text-gray-700";
-
-  return (
+    return (
     <div className="max-w-2xl">
       <Link href={retour} className="text-sm text-gray-500 hover:underline">
-        Retour a la fiche
+        Retour à la fiche
       </Link>
 
       <h1 className="mt-4 text-3xl font-bold">Modifier</h1>
@@ -98,6 +107,18 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
             <input className={champ} value={lieu} onChange={(e) => setLieu(e.target.value)} />
           </div>
           <div>
+            <label className={label}>Type de contrat</label>
+            <select className={champ} value={typeContrat} onChange={(e) => setTypeContrat(e.target.value)}>
+              <option value="">—</option>
+              {CONTRATS.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
             <label className={label}>Statut</label>
             <select className={champ} value={statut} onChange={(e) => setStatut(e.target.value)}>
               {STATUTS.map((s) => (
@@ -105,11 +126,21 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
               ))}
             </select>
           </div>
+          <div>
+            <label className={label}>Référence de l&apos;offre</label>
+            <input className={champ} value={reference} onChange={(e) => setReference(e.target.value)} />
+          </div>
         </div>
 
-        <div>
-          <label className={label}>Date envoi</label>
-          <input type="date" className={champ} value={dateEnvoi} onChange={(e) => setDateEnvoi(e.target.value)} />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={label}>Offre publiée le</label>
+            <input type="date" className={champ} value={datePublication} onChange={(e) => setDatePublication(e.target.value)} />
+          </div>
+          <div>
+            <label className={label}>Candidature envoyée le</label>
+            <input type="date" className={champ} value={dateEnvoi} onChange={(e) => setDateEnvoi(e.target.value)} />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -124,7 +155,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
         </div>
 
         <div>
-          <label className={label}>Lien vers offre</label>
+          <label className={label}>Lien vers l&apos;offre</label>
           <input className={champ} value={urlOffre} onChange={(e) => setUrlOffre(e.target.value)} />
         </div>
 
