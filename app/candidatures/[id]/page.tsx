@@ -16,6 +16,14 @@ function formatSalaire(min: number | null, max: number | null) {
   return `${(min ?? max)! / 1000} k€`;
 }
 
+function LienOffre({ url }: { url: string }) {
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+      Ouvrir l&apos;annonce
+    </a>
+  );
+}
+
 export default async function FicheCandidature({
   params,
 }: {
@@ -50,7 +58,8 @@ export default async function FicheCandidature({
     { label: "Offre publiée le", valeur: formatDate(c.date_publication) },
     { label: "Candidature envoyée le", valeur: formatDate(c.date_envoi) },
     { label: "Salaire", valeur: formatSalaire(c.salaire_min, c.salaire_max) },
-  ];  return (
+  ];
+    return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
         Retour aux candidatures
@@ -70,9 +79,7 @@ export default async function FicheCandidature({
           </Link>
           <Actions id={c.id} statutInitial={c.statut} />
         </div>
-      </div>
-
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+      </div>      <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <section className="rounded-lg border">
             <h2 className="border-b px-5 py-3 font-semibold">Détails</h2>
@@ -84,20 +91,9 @@ export default async function FicheCandidature({
                 </div>
               ))}
               <div className="flex px-5 py-3 text-sm">
-                <dt className="w-48 shrink-0 text-gray-500">Lien vers l&apos;offre</dt>
+                <dt className="w-48 shrink-0 text-gray-500">Lien</dt>
                 <dd className="font-medium">
-                  {c.url_offre ? (
-                    
-                      href={c.url_offre}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      Ouvrir l&apos;annonce
-                    </a>
-                  ) : (
-                    "—"
-                  )}
+                  {c.url_offre ? <LienOffre url={c.url_offre} /> : "—"}
                 </dd>
               </div>
             </dl>
