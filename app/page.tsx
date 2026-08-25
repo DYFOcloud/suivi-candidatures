@@ -1,95 +1,87 @@
 import { createClient } from "./supabase-server";
 import { redirect } from "next/navigation";
-import LogoutButton from "./LogoutButton";
+import Link from "next/link";
 
-const couleurs: Record<string, string> = {
-  "À envoyer": "bg-gray-100 text-gray-700",
-  "Envoyée": "bg-blue-100 text-blue-700",
-  "Entretien RH": "bg-amber-100 text-amber-700",
-  "Proposition": "bg-green-100 text-green-700",
-  "Refus": "bg-red-100 text-red-700",
-};
-
-function formatDate(d: string | null) {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString("fr-FR");
-}
-
-function formatSalaire(min: number | null, max: number | null) {
-  if (!min && !max) return "—";
-  if (min && max) return `${min / 1000}–${max / 1000} k€`;
-  return `${(min ?? max)! / 1000} k€`;
-}
-
-export default async function Home() {
+export default async function Dashboard() {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: candidatures, error } = await supabase
+  const { data: candidatures } = await supabase
     .from("candidatures")
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    return (
-      <main className="p-10">
-        <p className="text-red-600">Erreur : {error.message}</p>
-      </main>
-    );
-  }
+  const liste = candidatures ?? [];
+
+  const total = liste.length;
+  const envoyees = liste.filter((c) => c.statut !== "À envoyer").length;
+  const enCours = liste.filter((c) =>
+    ["Entretien RH", "Proposition"].includes(c.statut)
+  ).length;
+  const refus = liste.filter((c) => c.statut === "Refus").length;
+
+  const tauxReponse =
+    envoyees > 0 ? Math.round(((enCours + refus) / envoyees) * 100) : 0;
+
+  const stats = [
+    { label: "Candidatures", valeur: total },
+    { label: "Envoyées", valeur: envoyees },
+    { label: "En cours", valeur: enCours },
+    { label: "Taux de réponse", valeur: `${tauxReponse} %` },
+  ];
 
   return (
-    <main className="mx-auto max-w-6xl p-10">
+    <div>
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Suivi de candidatures</h1>
-          <p className="mt-2 text-gray-600">
-            {candidatures?.length ?? 0} candidatures — {user.email}
-          </p>
+          <h1 className="text-3xl font-bold">Tableau de bord</h1>
+          <p className="mt-2 text-gray-600">Vue d&apos;ensemble de vos recherches</p>
         </div>
-        <LogoutButton />
+        <Link
+          href="/nouvelle"
+          className="rounded bg-black px-4 py-2 text-sm text-white"
+        >
+          + Nouvelle candidature
+        </Link>
       </div>
 
-      <div className="mt-8 overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
-            <tr>
-              <th className="px-4 py-3">Entreprise</th>
-              <th className="px-4 py-3">Poste</th>
-              <th className="px-4 py-3">Lieu</th>
-              <th className="px-4 py-3">Envoyée le</th>
-              <th className="px-4 py-3">Salaire</th>
-              <th className="px-4 py-3">Statut</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {candidatures?.map((c) => (
-              <tr key={c.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium">{c.entreprise}</td>
-                <td className="px-4 py-3">{c.poste}</td>
-                <td className="px-4 py-3 text-gray-600">{c.lieu ?? "—"}</td>
-                <td className="px-4 py-3 text-gray-600">
-                  {formatDate(c.date_envoi)}
-                </td>
-                <td className="px-4 py-3 text-gray-600">
-                  {formatSalaire(c.salaire_min, c.salaire_max)}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium ${
-                      couleurs[c.statut] ?? "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {c.statut}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {stats.map((s) => (
+          <div key={s.label} className="rounded-lg border p-5">
+            <p className="text-sm text-gray-500">{s.label}</p>
+            <p className="mt-2 text-3xl font-bold">{s.valeur}</p>
+          </div>
+        ))}
       </div>
-    </main>
+
+      <div className="mt-8 rounded-lg border">
+        <div className="flex items-center justify-between border-b px-5 py-3">
+          <h2 className="font-semibold">Dernières candidatures</h2>
+          <Link href="/candidatures" className="text-sm text-gray-600 hover:underline">
+            Tout voir →
+          </Link>
+        </div>
+
+        {liste.length === 0 ? (
+          <p className="p-5 text-sm text-gray-500">
+            Aucune candidature pour le moment.
+          </p>
+        ) : (
+          <ul className="divide-y">
+            {liste.slice(0, 5).map((c) => (
+              <li key={c.id} className="flex items-center justify-between px-5 py-3">
+                <div>
+                  <p className="text-sm font-medium">{c.poste}</p>
+                  <p className="text-xs text-gray-500">{c.entreprise}</p>
+                </div>
+                <span className="text-xs text-gray-500">{c.statut}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }
