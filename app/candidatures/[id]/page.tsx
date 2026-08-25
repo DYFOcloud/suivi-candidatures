@@ -4,6 +4,7 @@ import Link from "next/link";
 import Actions from "./Actions";
 import Documents from "./Documents";
 import Historique from "./Historique";
+import Correspondance from "./Correspondance";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
@@ -79,7 +80,8 @@ export default async function FicheCandidature({
           </Link>
           <Actions id={c.id} statutInitial={c.statut} />
         </div>
-      </div>      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+      </div>
+            <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <section className="rounded-lg border">
             <h2 className="border-b px-5 py-3 font-semibold">Détails</h2>
@@ -98,6 +100,13 @@ export default async function FicheCandidature({
               </div>
             </dl>
           </section>
+
+          <Correspondance
+            id={c.id}
+            analyseInitiale={c.analyse_json}
+            cvPresent={!!c.cv_path}
+            offrePresente={!!c.offre_texte}
+          />
 
           <section className="rounded-lg border">
             <h2 className="border-b px-5 py-3 font-semibold">Notes</h2>

@@ -21,12 +21,13 @@ export default function Nouvelle() {
   const [salaireMax, setSalaireMax] = useState("");
   const [urlOffre, setUrlOffre] = useState("");
   const [notes, setNotes] = useState("");
+  const [offreTexte, setOffreTexte] = useState("");
   const [erreur, setErreur] = useState("");
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
-  function remplir(d: DonneesOffre) {
+  function remplir(d: DonneesOffre, texteBrut: string) {
     if (d.entreprise) setEntreprise(d.entreprise);
     if (d.poste) setPoste(d.poste);
     if (d.lieu) setLieu(d.lieu);
@@ -36,6 +37,7 @@ export default function Nouvelle() {
     if (d.salaire_min) setSalaireMin(d.salaire_min.toString());
     if (d.salaire_max) setSalaireMax(d.salaire_max.toString());
     if (d.notes) setNotes(d.notes);
+    setOffreTexte(texteBrut);
   }
 
   async function handleSubmit() {
@@ -69,6 +71,7 @@ export default function Nouvelle() {
       salaire_max: salaireMax ? Number(salaireMax) : null,
       url_offre: urlOffre || null,
       notes: notes || null,
+      offre_texte: offreTexte || null,
     });
 
     if (error) {
@@ -81,8 +84,7 @@ export default function Nouvelle() {
   }
 
   const champ = "w-full rounded border px-3 py-2 text-sm";
-  const label = "block text-sm font-medium text-gray-700";
-    return (
+  const label = "block text-sm font-medium text-gray-700";  return (
     <div className="max-w-2xl">
       <h1 className="text-3xl font-bold">Nouvelle candidature</h1>
 

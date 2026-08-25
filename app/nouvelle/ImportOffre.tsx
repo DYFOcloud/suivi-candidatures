@@ -17,7 +17,7 @@ export type DonneesOffre = {
 export default function ImportOffre({
   onExtraction,
 }: {
-  onExtraction: (d: DonneesOffre) => void;
+  onExtraction: (d: DonneesOffre, texteBrut: string) => void;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const [texte, setTexte] = useState("");
@@ -48,7 +48,7 @@ export default function ImportOffre({
         return;
       }
 
-      onExtraction(donnees);
+      onExtraction(donnees, texte);
       setOuvert(false);
       setTexte("");
     } catch {
