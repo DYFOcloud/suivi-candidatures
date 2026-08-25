@@ -3,18 +3,11 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import Actions from "./Actions";
 import Documents from "./Documents";
+import Historique from "./Historique";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("fr-FR");
-}
-
-function formatDateHeure(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 }
 
 function formatSalaire(min: number | null, max: number | null) {
@@ -46,7 +39,7 @@ export default async function FicheCandidature({
     .from("historique_statuts")
     .select("*")
     .eq("candidature_id", id)
-    .order("created_at", { ascending: false });
+    .order("date_evenement", { ascending: false });
 
   const champs = [
     { label: "Entreprise", valeur: c.entreprise },
@@ -55,9 +48,7 @@ export default async function FicheCandidature({
     { label: "Date d'envoi", valeur: formatDate(c.date_envoi) },
     { label: "Salaire", valeur: formatSalaire(c.salaire_min, c.salaire_max) },
     { label: "Notes", valeur: c.notes || "—" },
-  ];
-
-  return (
+  ];  return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
         Retour aux candidatures
@@ -94,28 +85,7 @@ export default async function FicheCandidature({
 
         <div className="space-y-6">
           <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />
-
-          <section className="rounded-lg border">
-            <h2 className="border-b px-5 py-3 font-semibold">Historique</h2>
-            {!historique || historique.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-gray-400">Aucun changement.</p>
-            ) : (
-              <ul className="divide-y">
-                {historique.map((h) => (
-                  <li key={h.id} className="px-5 py-3 text-sm">
-                    <p className="font-medium">
-                      {h.ancien_statut
-                        ? `${h.ancien_statut} → ${h.nouveau_statut}`
-                        : `Créée · ${h.nouveau_statut}`}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatDateHeure(h.created_at)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          <Historique evenements={historique ?? []} />
         </div>
       </div>
     </div>
