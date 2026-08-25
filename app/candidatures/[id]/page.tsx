@@ -50,9 +50,7 @@ export default async function FicheCandidature({
     { label: "Offre publiée le", valeur: formatDate(c.date_publication) },
     { label: "Candidature envoyée le", valeur: formatDate(c.date_envoi) },
     { label: "Salaire", valeur: formatSalaire(c.salaire_min, c.salaire_max) },
-    { label: "Notes", valeur: c.notes || "—" },
-  ];
-    return (
+  ];  return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
         Retour aux candidatures
@@ -75,17 +73,43 @@ export default async function FicheCandidature({
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <section className="rounded-lg border lg:col-span-2">
-          <h2 className="border-b px-5 py-3 font-semibold">Détails</h2>
-          <dl className="divide-y">
-            {champs.map((champ) => (
-              <div key={champ.label} className="flex px-5 py-3 text-sm">
-                <dt className="w-48 shrink-0 text-gray-500">{champ.label}</dt>
-                <dd className="font-medium">{champ.valeur}</dd>
+        <div className="space-y-6 lg:col-span-2">
+          <section className="rounded-lg border">
+            <h2 className="border-b px-5 py-3 font-semibold">Détails</h2>
+            <dl className="divide-y">
+              {champs.map((champ) => (
+                <div key={champ.label} className="flex px-5 py-3 text-sm">
+                  <dt className="w-48 shrink-0 text-gray-500">{champ.label}</dt>
+                  <dd className="font-medium">{champ.valeur}</dd>
+                </div>
+              ))}
+              <div className="flex px-5 py-3 text-sm">
+                <dt className="w-48 shrink-0 text-gray-500">Lien vers l&apos;offre</dt>
+                <dd className="font-medium">
+                  {c.url_offre ? (
+                    
+                      href={c.url_offre}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Ouvrir l&apos;annonce
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </dd>
               </div>
-            ))}
-          </dl>
-        </section>
+            </dl>
+          </section>
+
+          <section className="rounded-lg border">
+            <h2 className="border-b px-5 py-3 font-semibold">Notes</h2>
+            <p className="whitespace-pre-wrap px-5 py-4 text-sm text-gray-700">
+              {c.notes || "Aucune note."}
+            </p>
+          </section>
+        </div>
 
         <div className="space-y-6">
           <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />
