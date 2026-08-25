@@ -9,6 +9,14 @@ function formatDate(d: string | null) {
   return new Date(d).toLocaleDateString("fr-FR");
 }
 
+function formatDateHeure(d: string) {
+  return new Date(d).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 function formatSalaire(min: number | null, max: number | null) {
   if (!min && !max) return "—";
   if (min && max) return `${min / 1000}–${max / 1000} k€`;
@@ -33,6 +41,12 @@ export default async function FicheCandidature({
     .single();
 
   if (!c) notFound();
+
+  const { data: historique } = await supabase
+    .from("historique_statuts")
+    .select("*")
+    .eq("candidature_id", id)
+    .order("created_at", { ascending: false });
 
   const champs = [
     { label: "Entreprise", valeur: c.entreprise },
@@ -78,7 +92,31 @@ export default async function FicheCandidature({
           </dl>
         </section>
 
-        <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />
+        <div className="space-y-6">
+          <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />
+
+          <section className="rounded-lg border">
+            <h2 className="border-b px-5 py-3 font-semibold">Historique</h2>
+            {!historique || historique.length === 0 ? (
+              <p className="px-5 py-4 text-sm text-gray-400">Aucun changement.</p>
+            ) : (
+              <ul className="divide-y">
+                {historique.map((h) => (
+                  <li key={h.id} className="px-5 py-3 text-sm">
+                    <p className="font-medium">
+                      {h.ancien_statut
+                        ? `${h.ancien_statut} → ${h.nouveau_statut}`
+                        : `Créée · ${h.nouveau_statut}`}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formatDateHeure(h.created_at)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
