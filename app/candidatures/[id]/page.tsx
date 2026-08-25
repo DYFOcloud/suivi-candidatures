@@ -1,14 +1,8 @@
 import { createClient } from "../../supabase-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-
-const couleurs: Record<string, string> = {
-  "À envoyer": "bg-gray-100 text-gray-700",
-  "Envoyée": "bg-blue-100 text-blue-700",
-  "Entretien RH": "bg-amber-100 text-amber-700",
-  "Proposition": "bg-green-100 text-green-700",
-  "Refus": "bg-red-100 text-red-700",
-};
+import Actions from "./Actions";
+import Documents from "./Documents";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
@@ -49,8 +43,6 @@ export default async function FicheCandidature({
     { label: "Notes", valeur: c.notes || "—" },
   ];
 
-  const badge = couleurs[c.statut] ?? "bg-gray-100 text-gray-700";
-
   return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
@@ -62,22 +54,24 @@ export default async function FicheCandidature({
           <h1 className="text-3xl font-bold">{c.poste}</h1>
           <p className="mt-1 text-lg text-gray-600">{c.entreprise}</p>
         </div>
-        <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge}`}>
-          {c.statut}
-        </span>
+        <Actions id={c.id} statutInitial={c.statut} />
       </div>
 
-      <section className="mt-8 max-w-2xl rounded-lg border">
-        <h2 className="border-b px-5 py-3 font-semibold">Détails</h2>
-        <dl className="divide-y">
-          {champs.map((champ) => (
-            <div key={champ.label} className="flex px-5 py-3 text-sm">
-              <dt className="w-40 shrink-0 text-gray-500">{champ.label}</dt>
-              <dd className="font-medium">{champ.valeur}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <section className="rounded-lg border lg:col-span-2">
+          <h2 className="border-b px-5 py-3 font-semibold">Détails</h2>
+          <dl className="divide-y">
+            {champs.map((champ) => (
+              <div key={champ.label} className="flex px-5 py-3 text-sm">
+                <dt className="w-40 shrink-0 text-gray-500">{champ.label}</dt>
+                <dd className="font-medium">{champ.valeur}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />
+      </div>
     </div>
   );
 }
