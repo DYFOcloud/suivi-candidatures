@@ -54,7 +54,15 @@ export default async function FicheCandidature({
           <h1 className="text-3xl font-bold">{c.poste}</h1>
           <p className="mt-1 text-lg text-gray-600">{c.entreprise}</p>
         </div>
-        <Actions id={c.id} statutInitial={c.statut} />
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/candidatures/${c.id}/modifier`}
+            className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"
+          >
+            Modifier
+          </Link>
+          <Actions id={c.id} statutInitial={c.statut} />
+        </div>
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
