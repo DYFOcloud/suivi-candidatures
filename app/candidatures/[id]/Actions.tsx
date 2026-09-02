@@ -9,9 +9,11 @@ const STATUTS = ["À envoyer", "Envoyée", "Entretien RH", "Proposition", "Refus
 export default function Actions({
   id,
   statutInitial,
+  dateEnvoiExistante,
 }: {
   id: string;
   statutInitial: string;
+  dateEnvoiExistante: string | null;
 }) {
   const [statut, setStatut] = useState(statutInitial);
   const [loading, setLoading] = useState(false);
@@ -23,10 +25,15 @@ export default function Actions({
     setLoading(true);
 
     const supabase = createClient();
-    await supabase
-      .from("candidatures")
-      .update({ statut: nouveau })
-      .eq("id", id);
+    const modifs: { statut: string; date_envoi?: string | null } = { statut: nouveau };
+
+    if (nouveau === "À envoyer") {
+      modifs.date_envoi = null;
+    } else if (nouveau === "Envoyée" && !dateEnvoiExistante) {
+      modifs.date_envoi = new Date().toISOString().slice(0, 10);
+    }
+
+    await supabase.from("candidatures").update(modifs).eq("id", id);
 
     setLoading(false);
     router.refresh();
@@ -39,8 +46,7 @@ export default function Actions({
     router.push("/candidatures");
     router.refresh();
   }
-
-  return (
+    return (
     <div className="flex items-center gap-3">
       <select
         value={statut}

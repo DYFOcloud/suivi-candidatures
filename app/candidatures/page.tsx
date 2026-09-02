@@ -3,14 +3,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import Filtres from "./Filtres";
+import StatutSelect from "./StatutSelect";
 
-const couleurs: Record<string, string> = {
-  "À envoyer": "bg-gray-100 text-gray-700",
-  "Envoyée": "bg-blue-100 text-blue-700",
-  "Entretien RH": "bg-amber-100 text-amber-700",
-  "Proposition": "bg-green-100 text-green-700",
-  "Refus": "bg-red-100 text-red-700",
-};
+export const dynamic = "force-dynamic";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
@@ -48,7 +43,8 @@ export default async function Candidatures({
 
   if (error) {
     return <p className="text-red-600">Erreur : {error.message}</p>;
-  }  return (
+  }
+    return (
     <div>
       <div className="flex items-start justify-between">
         <div>
@@ -69,8 +65,7 @@ export default async function Candidatures({
       <Suspense fallback={<div className="mt-6 h-9" />}>
         <Filtres />
       </Suspense>
-
-      {!candidatures || candidatures.length === 0 ? (
+            {!candidatures || candidatures.length === 0 ? (
         <p className="mt-8 rounded-lg border p-8 text-center text-sm text-gray-500">
           Aucune candidature ne correspond.
         </p>
@@ -102,13 +97,11 @@ export default async function Candidatures({
                     {formatSalaire(c.salaire_min, c.salaire_max)}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium ${
-                        couleurs[c.statut] ?? "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {c.statut}
-                    </span>
+                    <StatutSelect
+                      id={c.id}
+                      statutInitial={c.statut}
+                      dateEnvoiExistante={c.date_envoi}
+                    />
                   </td>
                 </tr>
               ))}

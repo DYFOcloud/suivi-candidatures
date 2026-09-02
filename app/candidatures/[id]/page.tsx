@@ -78,7 +78,7 @@ export default async function FicheCandidature({
           >
             Modifier
           </Link>
-          <Actions id={c.id} statutInitial={c.statut} />
+          <Actions id={c.id} statutInitial={c.statut} dateEnvoiExistante={c.date_envoi} />
         </div>
       </div>
             <div className="mt-8 grid gap-6 lg:grid-cols-3">
