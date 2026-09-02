@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../supabase";
+import Preparation, { Prep } from "./Preparation";
 
 const ETAPES = [
   "Cabinet de recrutement",
@@ -29,6 +30,8 @@ export type Entretien = {
   questions_posees: string | null;
   notes: string | null;
   ressenti: string | null;
+  preparation_json: Prep | null;
+  preparation_langue: string | null;
 };
 
 function formatDateHeure(d: string | null) {
@@ -52,6 +55,7 @@ export default function Entretiens({
   const [formOuvert, setFormOuvert] = useState(false);
   const [editionId, setEditionId] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [prepId, setPrepId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [etape, setEtape] = useState(ETAPES[2]);
@@ -233,6 +237,12 @@ export default function Entretiens({
                 </div>
                 <div className="flex shrink-0 gap-2 text-xs">
                   <button
+                    onClick={() => setPrepId(prepId === e.id ? null : e.id)}
+                    className="font-medium text-violet-700 hover:underline"
+                  >
+                    {prepId === e.id ? "Fermer" : "Préparer"}
+                  </button>
+                  <button
                     onClick={() => setDetailId(detailId === e.id ? null : e.id)}
                     className="text-gray-500 hover:underline"
                   >
@@ -246,6 +256,15 @@ export default function Entretiens({
                   </button>
                 </div>
               </div>
+
+              {prepId === e.id && (
+                <Preparation
+                  entretienId={e.id}
+                  etape={e.etape}
+                  prepInitiale={e.preparation_json}
+                  langueInitiale={e.preparation_langue}
+                />
+              )}
 
               {detailId === e.id && (
                 <div className="mt-3 space-y-3 rounded bg-gray-50 p-3 text-sm">
