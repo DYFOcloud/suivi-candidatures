@@ -5,6 +5,7 @@ import Actions from "./Actions";
 import Documents from "./Documents";
 import Historique from "./Historique";
 import Correspondance from "./Correspondance";
+import Entretiens from "./Entretiens";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
@@ -49,6 +50,12 @@ export default async function FicheCandidature({
     .select("*")
     .eq("candidature_id", id)
     .order("date_evenement", { ascending: false });
+
+  const { data: entretiens } = await supabase
+    .from("entretiens")
+    .select("*")
+    .eq("candidature_id", id)
+    .order("date_entretien", { ascending: true, nullsFirst: false });
 
   const champs = [
     { label: "Entreprise", valeur: c.entreprise },
@@ -101,6 +108,8 @@ export default async function FicheCandidature({
               </div>
             </dl>
           </section>
+
+          <Entretiens candidatureId={c.id} entretiens={entretiens ?? []} />
 
           <Correspondance
             id={c.id}
