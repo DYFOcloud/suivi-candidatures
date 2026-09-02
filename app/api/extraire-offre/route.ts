@@ -19,8 +19,7 @@ export async function POST(request: Request) {
   if (!texte || texte.length < 50) {
     return NextResponse.json({ erreur: "Texte trop court" }, { status: 400 });
   }
-
-  const prompt = `Voici le texte d'une offre d'emploi. Extrais les informations demandées.
+    const prompt = `Voici le texte d'une offre d'emploi. Extrais les informations demandées.
 
 Réponds UNIQUEMENT avec un objet JSON, sans texte avant ni après, sans balises markdown.
 
@@ -30,6 +29,7 @@ Format attendu :
   "poste": "intitulé du poste ou null",
   "lieu": "ville ou null",
   "type_contrat": "CDI, CDD, Stage, Alternance, Intérim, Freelance ou null",
+  "source": "LinkedIn, Indeed, HelloWork, Welcome to the Jungle, APEC, France Travail, Site carrière, Cabinet de recrutement ou null",
   "date_publication": "date au format AAAA-MM-JJ ou null",
   "reference": "référence de l'offre ou null",
   "salaire_min": nombre annuel brut en euros ou null,
@@ -39,6 +39,7 @@ Format attendu :
 
 Règles :
 - type_contrat : utilise exactement une de ces valeurs, sans variante
+- source : déduis-la du texte (mentions du site, mise en page caractéristique, formulations types). Si aucun indice, mets null
 - date_publication : si l'offre indique "il y a 3 jours", calcule la date à partir d'aujourd'hui (${new Date().toISOString().slice(0, 10)})
 - reference : cherche "Réf.", "Ref", "Référence", "Offre n°", ou un code alphanumérique identifiant l'offre
 - Si un salaire est mensuel, multiplie par 12
@@ -48,7 +49,6 @@ Règles :
 
 Texte de l'offre :
 ${texte.slice(0, 15000)}`;
-
   try {
     const reponse = await anthropic.messages.create({
       model: "claude-sonnet-4-5",

@@ -7,6 +7,7 @@ export type DonneesOffre = {
   poste: string | null;
   lieu: string | null;
   type_contrat: string | null;
+  source: string | null;
   date_publication: string | null;
   reference: string | null;
   salaire_min: number | null;
@@ -57,8 +58,7 @@ export default function ImportOffre({
 
     setLoading(false);
   }
-
-  if (!ouvert) {
+    if (!ouvert) {
     return (
       <button
         onClick={() => setOuvert(true)}

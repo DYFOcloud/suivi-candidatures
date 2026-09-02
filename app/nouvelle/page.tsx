@@ -7,12 +7,26 @@ import ImportOffre, { DonneesOffre } from "./ImportOffre";
 
 const STATUTS = ["À envoyer", "Envoyée", "Entretien RH", "Proposition", "Refus"];
 const CONTRATS = ["CDI", "CDD", "Stage", "Alternance", "Intérim", "Freelance"];
+const SOURCES = [
+  "LinkedIn",
+  "Indeed",
+  "HelloWork",
+  "Welcome to the Jungle",
+  "APEC",
+  "France Travail",
+  "Site carrière",
+  "Cabinet de recrutement",
+  "Cooptation",
+  "Candidature spontanée",
+  "Autre",
+];
 
 export default function Nouvelle() {
   const [entreprise, setEntreprise] = useState("");
   const [poste, setPoste] = useState("");
   const [lieu, setLieu] = useState("");
   const [typeContrat, setTypeContrat] = useState("");
+  const [source, setSource] = useState("");
   const [statut, setStatut] = useState("À envoyer");
   const [datePublication, setDatePublication] = useState("");
   const [dateEnvoi, setDateEnvoi] = useState("");
@@ -32,6 +46,7 @@ export default function Nouvelle() {
     if (d.poste) setPoste(d.poste);
     if (d.lieu) setLieu(d.lieu);
     if (d.type_contrat) setTypeContrat(d.type_contrat);
+    if (d.source) setSource(d.source);
     if (d.date_publication) setDatePublication(d.date_publication);
     if (d.reference) setReference(d.reference);
     if (d.salaire_min) setSalaireMin(d.salaire_min.toString());
@@ -63,6 +78,7 @@ export default function Nouvelle() {
       poste,
       lieu: lieu || null,
       type_contrat: typeContrat || null,
+      source: source || null,
       statut,
       date_publication: datePublication || null,
       date_envoi: dateEnvoi || null,
@@ -84,7 +100,8 @@ export default function Nouvelle() {
   }
 
   const champ = "w-full rounded border px-3 py-2 text-sm";
-  const label = "block text-sm font-medium text-gray-700";  return (
+  const label = "block text-sm font-medium text-gray-700";
+    return (
     <div className="max-w-2xl">
       <h1 className="text-3xl font-bold">Nouvelle candidature</h1>
 
@@ -121,6 +138,15 @@ export default function Nouvelle() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
+            <label className={label}>Source</label>
+            <select className={champ} value={source} onChange={(e) => setSource(e.target.value)}>
+              <option value="">—</option>
+              {SOURCES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label className={label}>Statut</label>
             <select className={champ} value={statut} onChange={(e) => setStatut(e.target.value)}>
               {STATUTS.map((s) => (
@@ -128,20 +154,27 @@ export default function Nouvelle() {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={label}>Référence de l&apos;offre</label>
             <input className={champ} value={reference} onChange={(e) => setReference(e.target.value)} />
+          </div>
+          <div>
+            <label className={label}>Offre publiée le</label>
+            <input type="date" className={champ} value={datePublication} onChange={(e) => setDatePublication(e.target.value)} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={label}>Offre publiée le</label>
-            <input type="date" className={champ} value={datePublication} onChange={(e) => setDatePublication(e.target.value)} />
-          </div>
-          <div>
             <label className={label}>Candidature envoyée le</label>
             <input type="date" className={champ} value={dateEnvoi} onChange={(e) => setDateEnvoi(e.target.value)} />
+          </div>
+          <div>
+            <label className={label}>Lien vers l&apos;offre</label>
+            <input className={champ} value={urlOffre} onChange={(e) => setUrlOffre(e.target.value)} />
           </div>
         </div>
 
@@ -154,11 +187,6 @@ export default function Nouvelle() {
             <label className={label}>Salaire max</label>
             <input type="number" className={champ} value={salaireMax} onChange={(e) => setSalaireMax(e.target.value)} />
           </div>
-        </div>
-
-        <div>
-          <label className={label}>Lien vers l&apos;offre</label>
-          <input className={champ} value={urlOffre} onChange={(e) => setUrlOffre(e.target.value)} />
         </div>
 
         <div>

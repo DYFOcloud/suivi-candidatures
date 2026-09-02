@@ -55,6 +55,7 @@ export default async function FicheCandidature({
     { label: "Poste", valeur: c.poste },
     { label: "Lieu", valeur: c.lieu ?? "—" },
     { label: "Type de contrat", valeur: c.type_contrat ?? "—" },
+    { label: "Source", valeur: c.source ?? "—" },
     { label: "Référence", valeur: c.reference ?? "—" },
     { label: "Offre publiée le", valeur: formatDate(c.date_publication) },
     { label: "Candidature envoyée le", valeur: formatDate(c.date_envoi) },

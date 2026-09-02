@@ -7,6 +7,19 @@ import { createClient } from "../../../supabase";
 
 const STATUTS = ["À envoyer", "Envoyée", "Entretien RH", "Proposition", "Refus"];
 const CONTRATS = ["CDI", "CDD", "Stage", "Alternance", "Intérim", "Freelance"];
+const SOURCES = [
+  "LinkedIn",
+  "Indeed",
+  "HelloWork",
+  "Welcome to the Jungle",
+  "APEC",
+  "France Travail",
+  "Site carrière",
+  "Cabinet de recrutement",
+  "Cooptation",
+  "Candidature spontanée",
+  "Autre",
+];
 
 type Candidature = {
   id: string;
@@ -14,6 +27,7 @@ type Candidature = {
   poste: string;
   lieu: string | null;
   type_contrat: string | null;
+  source: string | null;
   statut: string;
   date_publication: string | null;
   date_envoi: string | null;
@@ -29,6 +43,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
   const [poste, setPoste] = useState(candidature.poste);
   const [lieu, setLieu] = useState(candidature.lieu ?? "");
   const [typeContrat, setTypeContrat] = useState(candidature.type_contrat ?? "");
+  const [source, setSource] = useState(candidature.source ?? "");
   const [statut, setStatut] = useState(candidature.statut);
   const [datePublication, setDatePublication] = useState(candidature.date_publication ?? "");
   const [dateEnvoi, setDateEnvoi] = useState(candidature.date_envoi ?? "");
@@ -60,6 +75,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
         poste,
         lieu: lieu || null,
         type_contrat: typeContrat || null,
+        source: source || null,
         statut,
         date_publication: datePublication || null,
         date_envoi: dateEnvoi || null,
@@ -119,6 +135,15 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
 
         <div className="grid grid-cols-2 gap-4">
           <div>
+            <label className={label}>Source</label>
+            <select className={champ} value={source} onChange={(e) => setSource(e.target.value)}>
+              <option value="">—</option>
+              {SOURCES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label className={label}>Statut</label>
             <select className={champ} value={statut} onChange={(e) => setStatut(e.target.value)}>
               {STATUTS.map((s) => (
@@ -126,20 +151,27 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={label}>Référence de l&apos;offre</label>
             <input className={champ} value={reference} onChange={(e) => setReference(e.target.value)} />
+          </div>
+          <div>
+            <label className={label}>Offre publiée le</label>
+            <input type="date" className={champ} value={datePublication} onChange={(e) => setDatePublication(e.target.value)} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={label}>Offre publiée le</label>
-            <input type="date" className={champ} value={datePublication} onChange={(e) => setDatePublication(e.target.value)} />
-          </div>
-          <div>
             <label className={label}>Candidature envoyée le</label>
             <input type="date" className={champ} value={dateEnvoi} onChange={(e) => setDateEnvoi(e.target.value)} />
+          </div>
+          <div>
+            <label className={label}>Lien vers l&apos;offre</label>
+            <input className={champ} value={urlOffre} onChange={(e) => setUrlOffre(e.target.value)} />
           </div>
         </div>
 
@@ -152,11 +184,6 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
             <label className={label}>Salaire max</label>
             <input type="number" className={champ} value={salaireMax} onChange={(e) => setSalaireMax(e.target.value)} />
           </div>
-        </div>
-
-        <div>
-          <label className={label}>Lien vers l&apos;offre</label>
-          <input className={champ} value={urlOffre} onChange={(e) => setUrlOffre(e.target.value)} />
         </div>
 
         <div>
