@@ -23,43 +23,45 @@ export default function Filtres() {
   const actif = statut || recherche;
 
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-3">
+    <div className="mt-6 space-y-2">
       <input
         placeholder="Rechercher une entreprise, un poste..."
         defaultValue={recherche}
         onChange={(e) => modifier("q", e.target.value)}
-        className="w-72 rounded border px-3 py-1.5 text-sm"
+        className="w-full rounded border px-3 py-2 text-sm md:w-72"
       />
 
-      <select
-        value={statut}
-        onChange={(e) => modifier("statut", e.target.value)}
-        className="rounded border px-3 py-1.5 text-sm"
-      >
-        <option value="">Tous les statuts</option>
-        {STATUTS.map((s) => (
-          <option key={s} value={s}>{s}</option>
-        ))}
-      </select>
-
-      <select
-        value={tri}
-        onChange={(e) => modifier("tri", e.target.value)}
-        className="rounded border px-3 py-1.5 text-sm"
-      >
-        <option value="recent">Plus récentes</option>
-        <option value="ancien">Plus anciennes</option>
-        <option value="entreprise">Entreprise (A-Z)</option>
-      </select>
-
-      {actif && (
-        <button
-          onClick={() => router.push(pathname)}
-          className="text-sm text-gray-500 hover:underline"
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={statut}
+          onChange={(e) => modifier("statut", e.target.value)}
+          className="flex-1 rounded border px-3 py-2 text-sm md:flex-none"
         >
-          Réinitialiser
-        </button>
-      )}
+          <option value="">Tous les statuts</option>
+          {STATUTS.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+
+        <select
+          value={tri}
+          onChange={(e) => modifier("tri", e.target.value)}
+          className="flex-1 rounded border px-3 py-2 text-sm md:flex-none"
+        >
+          <option value="recent">Plus récentes</option>
+          <option value="ancien">Plus anciennes</option>
+          <option value="entreprise">Entreprise (A-Z)</option>
+        </select>
+
+        {actif && (
+          <button
+            onClick={() => router.push(pathname)}
+            className="text-sm text-gray-500 hover:underline"
+          >
+            Réinitialiser
+          </button>
+        )}
+      </div>
     </div>
   );
 }

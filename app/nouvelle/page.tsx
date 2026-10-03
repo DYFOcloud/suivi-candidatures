@@ -103,7 +103,7 @@ export default function Nouvelle() {
   const label = "block text-sm font-medium text-gray-700";
     return (
     <div className="max-w-2xl">
-      <h1 className="text-3xl font-bold">Nouvelle candidature</h1>
+      <h1 className="text-2xl font-bold md:text-3xl">Nouvelle candidature</h1>
 
       <div className="mt-6">
         <ImportOffre onExtraction={remplir} />
@@ -120,7 +120,7 @@ export default function Nouvelle() {
           <input className={champ} value={poste} onChange={(e) => setPoste(e.target.value)} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Lieu</label>
             <input className={champ} value={lieu} onChange={(e) => setLieu(e.target.value)} />
@@ -136,7 +136,7 @@ export default function Nouvelle() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Source</label>
             <select className={champ} value={source} onChange={(e) => setSource(e.target.value)}>
@@ -156,7 +156,7 @@ export default function Nouvelle() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Référence de l&apos;offre</label>
             <input className={champ} value={reference} onChange={(e) => setReference(e.target.value)} />
@@ -167,7 +167,7 @@ export default function Nouvelle() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Candidature envoyée le</label>
             <input type="date" className={champ} value={dateEnvoi} onChange={(e) => setDateEnvoi(e.target.value)} />
@@ -178,7 +178,7 @@ export default function Nouvelle() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Salaire min</label>
             <input type="number" className={champ} value={salaireMin} onChange={(e) => setSalaireMin(e.target.value)} />

@@ -107,7 +107,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
         Retour à la fiche
       </Link>
 
-      <h1 className="mt-4 text-3xl font-bold">Modifier</h1>
+      <h1 className="mt-4 text-2xl font-bold md:text-3xl">Modifier</h1>
 
       <div className="mt-6 space-y-4">
         <div>
@@ -120,7 +120,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
           <input className={champ} value={poste} onChange={(e) => setPoste(e.target.value)} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Lieu</label>
             <input className={champ} value={lieu} onChange={(e) => setLieu(e.target.value)} />
@@ -136,7 +136,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Source</label>
             <select className={champ} value={source} onChange={(e) => setSource(e.target.value)}>
@@ -156,7 +156,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Référence de l&apos;offre</label>
             <input className={champ} value={reference} onChange={(e) => setReference(e.target.value)} />
@@ -167,7 +167,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Candidature envoyée le</label>
             <input type="date" className={champ} value={dateEnvoi} onChange={(e) => setDateEnvoi(e.target.value)} />
@@ -178,7 +178,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Salaire min</label>
             <input type="number" className={champ} value={salaireMin} onChange={(e) => setSalaireMin(e.target.value)} />
@@ -193,12 +193,12 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
           <label className={label}>Notes</label>
           <textarea className={champ} rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
-                <div className="rounded-lg border bg-gray-50 p-4">
+
+        <div className="rounded-lg border bg-gray-50 p-4">
           <label className={label}>Texte de l&apos;offre</label>
           <p className="mt-1 text-xs text-gray-500">
             Nécessaire pour l&apos;analyse de correspondance et la préparation
-            d&apos;entretien. Copiez la page de l&apos;annonce (Ctrl+A, Ctrl+C) et
-            collez ici.
+            d&apos;entretien.
           </p>
           <textarea
             className={`${champ} mt-2`}
@@ -207,11 +207,6 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
             onChange={(e) => setOffreTexte(e.target.value)}
             placeholder="Collez le texte de l'offre..."
           />
-          {offreTexte && (
-            <p className="mt-1 text-xs text-gray-500">
-              {offreTexte.length} caractères
-            </p>
-          )}
         </div>
 
         {erreur && <p className="text-sm text-red-600">{erreur}</p>}
@@ -228,3 +223,4 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
     </div>
   );
 }
+

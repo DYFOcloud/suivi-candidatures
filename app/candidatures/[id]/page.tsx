@@ -74,12 +74,12 @@ export default async function FicheCandidature({
         Retour aux candidatures
       </Link>
 
-      <div className="mt-4 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{c.poste}</h1>
-          <p className="mt-1 text-lg text-gray-600">{c.entreprise}</p>
+      <div className="mt-4 space-y-3 md:flex md:items-start md:justify-between md:space-y-0">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold md:text-3xl">{c.poste}</h1>
+          <p className="mt-1 text-gray-600 md:text-lg">{c.entreprise}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/candidatures/${c.id}/modifier`}
             className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"
@@ -89,20 +89,27 @@ export default async function FicheCandidature({
           <Actions id={c.id} statutInitial={c.statut} dateEnvoiExistante={c.date_envoi} />
         </div>
       </div>
-            <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+            <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
           <section className="rounded-lg border">
-            <h2 className="border-b px-5 py-3 font-semibold">Détails</h2>
+            <h2 className="border-b px-4 py-3 font-semibold">Détails</h2>
             <dl className="divide-y">
               {champs.map((champ) => (
-                <div key={champ.label} className="flex px-5 py-3 text-sm">
-                  <dt className="w-48 shrink-0 text-gray-500">{champ.label}</dt>
-                  <dd className="font-medium">{champ.valeur}</dd>
+                <div
+                  key={champ.label}
+                  className="px-4 py-3 text-sm md:flex md:gap-4"
+                >
+                  <dt className="text-xs text-gray-500 md:w-48 md:shrink-0 md:text-sm">
+                    {champ.label}
+                  </dt>
+                  <dd className="mt-0.5 font-medium md:mt-0">{champ.valeur}</dd>
                 </div>
               ))}
-              <div className="flex px-5 py-3 text-sm">
-                <dt className="w-48 shrink-0 text-gray-500">Lien</dt>
-                <dd className="font-medium">
+              <div className="px-4 py-3 text-sm md:flex md:gap-4">
+                <dt className="text-xs text-gray-500 md:w-48 md:shrink-0 md:text-sm">
+                  Lien
+                </dt>
+                <dd className="mt-0.5 font-medium md:mt-0">
                   {c.url_offre ? <LienOffre url={c.url_offre} /> : "—"}
                 </dd>
               </div>
@@ -119,14 +126,14 @@ export default async function FicheCandidature({
           />
 
           <section className="rounded-lg border">
-            <h2 className="border-b px-5 py-3 font-semibold">Notes</h2>
-            <p className="whitespace-pre-wrap px-5 py-4 text-sm text-gray-700">
+            <h2 className="border-b px-4 py-3 font-semibold">Notes</h2>
+            <p className="whitespace-pre-wrap px-4 py-3 text-sm text-gray-700">
               {c.notes || "Aucune note."}
             </p>
           </section>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />
           <Historique evenements={historique ?? []} />
         </div>
