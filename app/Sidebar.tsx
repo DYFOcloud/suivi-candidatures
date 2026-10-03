@@ -7,6 +7,7 @@ const ONGLETS = [
   { href: "/", label: "Tableau de bord" },
   { href: "/candidatures", label: "Candidatures" },
   { href: "/agenda", label: "Agenda" },
+  { href: "/statistiques", label: "Statistiques" },
   { href: "/documents", label: "Mes documents" },
 ];
 
