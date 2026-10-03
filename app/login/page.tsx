@@ -64,6 +64,17 @@ export default function Login() {
           className="w-full rounded border px-3 py-2 text-sm"
         />
 
+        {mode === "connexion" && (
+          <div className="text-right">
+            <Link
+              href="/mot-de-passe-oublie"
+              className="text-xs text-gray-500 hover:underline"
+            >
+              Mot de passe oublié ?
+            </Link>
+          </div>
+        )}
+
         {mode === "inscription" && (
           <label className="flex items-start gap-2 pt-1 text-xs text-gray-600">
             <input
@@ -91,11 +102,7 @@ export default function Login() {
           disabled={loading}
           className="w-full rounded bg-black py-2 text-sm text-white disabled:opacity-50"
         >
-          {loading
-            ? "..."
-            : mode === "connexion"
-            ? "Se connecter"
-            : "Créer mon compte"}
+          {loading ? "..." : mode === "connexion" ? "Se connecter" : "Créer mon compte"}
         </button>
 
         <button

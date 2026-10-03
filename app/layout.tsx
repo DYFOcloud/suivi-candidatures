@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Link from "next/link";
 import Sidebar from "./Sidebar";
 import LogoutButton from "./LogoutButton";
 import Footer from "./Footer";
@@ -24,8 +25,14 @@ export default async function RootLayout({
           <div className="flex min-h-screen">
             <Sidebar />
             <div className="flex flex-1 flex-col">
-              <header className="flex items-center justify-end border-b px-8 py-3">
-                <span className="mr-4 text-sm text-gray-600">{user.email}</span>
+              <header className="flex items-center justify-end gap-4 border-b px-8 py-3">
+                <span className="text-sm text-gray-600">{user.email}</span>
+                <Link
+                  href="/profil"
+                  className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"
+                >
+                  Profil
+                </Link>
                 <LogoutButton />
               </header>
               <main className="flex-1 p-8">{children}</main>
