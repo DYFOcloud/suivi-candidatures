@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "../../supabase-server";
+import { verifierQuota, enregistrerAppel } from "../quotas";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -12,6 +13,11 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ erreur: "Non autorisé" }, { status: 401 });
+  }
+
+  const quota = await verifierQuota(supabase, user.id, "extraction");
+  if (!quota.autorise) {
+    return NextResponse.json({ erreur: quota.message }, { status: 429 });
   }
 
   const { texte } = await request.json();
@@ -39,9 +45,9 @@ Format attendu :
 
 Règles :
 - type_contrat : utilise exactement une de ces valeurs, sans variante
-- source : déduis-la du texte (mentions du site, mise en page caractéristique, formulations types). Si aucun indice, mets null
+- source : déduis-la du texte. Si aucun indice, mets null
 - date_publication : si l'offre indique "il y a 3 jours", calcule la date à partir d'aujourd'hui (${new Date().toISOString().slice(0, 10)})
-- reference : cherche "Réf.", "Ref", "Référence", "Offre n°", ou un code alphanumérique identifiant l'offre
+- reference : cherche "Réf.", "Ref", "Référence", "Offre n°", ou un code alphanumérique
 - Si un salaire est mensuel, multiplie par 12
 - Si une fourchette est donnée, remplis min et max
 - Si un seul chiffre, mets-le dans salaire_min
@@ -64,7 +70,9 @@ ${texte.slice(0, 15000)}`;
     const nettoye = bloc.text.replace(/```json|```/g, "").trim();
     const donnees = JSON.parse(nettoye);
 
-    return NextResponse.json(donnees);
+    await enregistrerAppel(supabase, user.id, "extraction");
+
+    return NextResponse.json({ ...donnees, _restant: quota.restant - 1 });
   } catch (e) {
     console.error(e);
     return NextResponse.json(

@@ -23,6 +23,8 @@ export default function Documents({
   const [enCours, setEnCours] = useState("");
   const router = useRouter();
 
+  const cvEstPdf = cvPath?.toLowerCase().endsWith(".pdf") ?? false;
+
   async function upload(fichier: File, type: "cv" | "lm") {
     setErreur("");
 
@@ -86,8 +88,7 @@ export default function Documents({
 
     router.refresh();
   }
-
-  function Ligne({
+    function Ligne({
     label,
     chemin,
     type,
@@ -140,6 +141,15 @@ export default function Documents({
         <Ligne label="CV" chemin={cvPath} type="cv" />
         <Ligne label="Lettre de motivation" chemin={lmPath} type="lm" />
       </div>
+
+      {cvPath && !cvEstPdf && (
+        <p className="border-t bg-amber-50 px-5 py-3 text-xs text-amber-800">
+          Votre CV est au format Word. L&apos;analyse de correspondance et la
+          préparation d&apos;entretien nécessitent un PDF. Enregistrez-le en PDF
+          depuis Word puis remplacez-le ici.
+        </p>
+      )}
+
       {erreur && <p className="px-5 pb-3 text-sm text-red-600">{erreur}</p>}
     </section>
   );

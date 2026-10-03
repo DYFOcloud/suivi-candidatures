@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "../../supabase";
 
 type Analyse = {
   score: number;
@@ -30,7 +31,36 @@ export default function Correspondance({
   const [analyse, setAnalyse] = useState<Analyse | null>(analyseInitiale);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState("");
+  const [formOuvert, setFormOuvert] = useState(false);
+  const [texte, setTexte] = useState("");
+  const [sauvegarde, setSauvegarde] = useState(false);
   const router = useRouter();
+
+  async function enregistrerOffre() {
+    if (texte.length < 50) {
+      setErreur("Le texte semble trop court.");
+      return;
+    }
+
+    setSauvegarde(true);
+    setErreur("");
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("candidatures")
+      .update({ offre_texte: texte })
+      .eq("id", id);
+
+    setSauvegarde(false);
+
+    if (error) {
+      setErreur(error.message);
+    } else {
+      setFormOuvert(false);
+      setTexte("");
+      router.refresh();
+    }
+  }
 
   async function lancer() {
     setLoading(true);
@@ -56,17 +86,65 @@ export default function Correspondance({
     }
 
     setLoading(false);
-  }  const pret = cvPresent && offrePresente;
-
-  return (
+  }
+    return (
     <section className="rounded-lg border">
       <h2 className="border-b px-5 py-3 font-semibold">Correspondance CV / offre</h2>
 
-      {!pret ? (
-        <div className="px-5 py-4 text-sm text-gray-500">
-          {!cvPresent && <p>Ajoutez un CV au format PDF pour lancer l&apos;analyse.</p>}
-          {!offrePresente && <p>Le texte de l&apos;offre est manquant.</p>}
+      {!offrePresente ? (
+        <div className="px-5 py-4">
+          {formOuvert ? (
+            <div>
+              <p className="text-sm font-medium">Texte de l&apos;offre</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Sur la page de l&apos;annonce : Ctrl+A puis Ctrl+C, et collez ici.
+              </p>
+              <textarea
+                value={texte}
+                onChange={(e) => setTexte(e.target.value)}
+                rows={6}
+                className="mt-2 w-full rounded border px-3 py-2 text-sm"
+                placeholder="Collez le texte de l'offre..."
+              />
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={enregistrerOffre}
+                  disabled={sauvegarde}
+                  className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+                >
+                  {sauvegarde ? "Enregistrement..." : "Enregistrer"}
+                </button>
+                <button
+                  onClick={() => {
+                    setFormOuvert(false);
+                    setErreur("");
+                  }}
+                  className="rounded border px-4 py-2 text-sm"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+                           <p className="text-sm text-gray-600">
+                Copiez-collez l&apos;annonce complète telle qu&apos;elle est
+                publiée pour obtenir votre score de correspondance.
+              </p>
+              <button
+                onClick={() => setFormOuvert(true)}
+                className="mt-3 rounded bg-black px-4 py-2 text-sm text-white"
+              >
+                Coller le texte de l&apos;offre
+              </button>
+            </div>
+          )}
+          {erreur && <p className="mt-2 text-sm text-red-600">{erreur}</p>}
         </div>
+      ) : !cvPresent ? (
+        <p className="px-5 py-4 text-sm text-gray-500">
+          Ajoutez un CV au format PDF pour lancer l&apos;analyse.
+        </p>
       ) : !analyse ? (
         <div className="px-5 py-4">
           <button
@@ -79,7 +157,7 @@ export default function Correspondance({
           {erreur && <p className="mt-2 text-sm text-red-600">{erreur}</p>}
         </div>
       ) : (
-        <div className="px-5 py-4">
+                <div className="px-5 py-4">
           <div className="flex items-baseline gap-2">
             <span className={`text-4xl font-bold ${couleurScore(analyse.score)}`}>
               {analyse.score}

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "../../supabase-server";
+import { verifierQuota, enregistrerAppel } from "../quotas";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -12,6 +13,11 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ erreur: "Non autorisé" }, { status: 401 });
+  }
+
+  const quota = await verifierQuota(supabase, user.id, "preparation");
+  if (!quota.autorise) {
+    return NextResponse.json({ erreur: quota.message }, { status: 429 });
   }
 
   const { entretienId, langue } = await request.json();
@@ -99,6 +105,8 @@ ${c.offre_texte.slice(0, 15000)}`;
       .update({ preparation_json: preparation, preparation_langue: langue })
       .eq("id", entretienId);
 
+    await enregistrerAppel(supabase, user.id, "preparation");
+
     return NextResponse.json(preparation);
   } catch (err) {
     console.error(err);
@@ -108,3 +116,4 @@ ${c.offre_texte.slice(0, 15000)}`;
     );
   }
 }
+

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "../../supabase-server";
+import { verifierQuota, enregistrerAppel } from "../quotas";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -12,6 +13,11 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ erreur: "Non autorisé" }, { status: 401 });
+  }
+
+  const quota = await verifierQuota(supabase, user.id, "correspondance");
+  if (!quota.autorise) {
+    return NextResponse.json({ erreur: quota.message }, { status: 429 });
   }
 
   const { candidatureId } = await request.json();
@@ -43,7 +49,8 @@ export async function POST(request: Request) {
   }
 
   const buffer = await fichier.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString("base64");  const consigne = `Tu compares un CV à une offre d'emploi.
+  const base64 = Buffer.from(buffer).toString("base64");
+    const consigne = `Tu compares un CV à une offre d'emploi.
 
 Réponds UNIQUEMENT avec un objet JSON, sans texte avant ni après, sans balises markdown.
 
@@ -66,7 +73,6 @@ Les suggestions doivent être actionnables : reformuler telle expérience, ajout
 
 Voici le texte de l'offre :
 ${c.offre_texte.slice(0, 15000)}`;
-
   try {
     const reponse = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
@@ -97,6 +103,8 @@ ${c.offre_texte.slice(0, 15000)}`;
       .from("candidatures")
       .update({ score_correspondance: analyse.score, analyse_json: analyse })
       .eq("id", candidatureId);
+
+    await enregistrerAppel(supabase, user.id, "correspondance");
 
     return NextResponse.json(analyse);
   } catch (e) {

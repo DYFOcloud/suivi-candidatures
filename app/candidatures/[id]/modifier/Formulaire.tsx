@@ -36,6 +36,7 @@ type Candidature = {
   salaire_max: number | null;
   url_offre: string | null;
   notes: string | null;
+  offre_texte: string | null;
 };
 
 export default function Formulaire({ candidature }: { candidature: Candidature }) {
@@ -52,6 +53,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
   const [salaireMax, setSalaireMax] = useState(candidature.salaire_max?.toString() ?? "");
   const [urlOffre, setUrlOffre] = useState(candidature.url_offre ?? "");
   const [notes, setNotes] = useState(candidature.notes ?? "");
+  const [offreTexte, setOffreTexte] = useState(candidature.offre_texte ?? "");
   const [erreur, setErreur] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -84,6 +86,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
         salaire_max: salaireMax ? Number(salaireMax) : null,
         url_offre: urlOffre || null,
         notes: notes || null,
+        offre_texte: offreTexte || null,
       })
       .eq("id", candidature.id);
 
@@ -189,6 +192,26 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
         <div>
           <label className={label}>Notes</label>
           <textarea className={champ} rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </div>
+                <div className="rounded-lg border bg-gray-50 p-4">
+          <label className={label}>Texte de l&apos;offre</label>
+          <p className="mt-1 text-xs text-gray-500">
+            Nécessaire pour l&apos;analyse de correspondance et la préparation
+            d&apos;entretien. Copiez la page de l&apos;annonce (Ctrl+A, Ctrl+C) et
+            collez ici.
+          </p>
+          <textarea
+            className={`${champ} mt-2`}
+            rows={6}
+            value={offreTexte}
+            onChange={(e) => setOffreTexte(e.target.value)}
+            placeholder="Collez le texte de l'offre..."
+          />
+          {offreTexte && (
+            <p className="mt-1 text-xs text-gray-500">
+              {offreTexte.length} caractères
+            </p>
+          )}
         </div>
 
         {erreur && <p className="text-sm text-red-600">{erreur}</p>}
