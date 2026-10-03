@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "./Sidebar";
 import LogoutButton from "./LogoutButton";
+import Footer from "./Footer";
 import { createClient } from "./supabase-server";
 
 export const metadata: Metadata = {
-  title: "Suivi de candidatures",
-  description: "Gérez toutes vos candidatures au même endroit",
+  title: "Joply",
+  description: "Suivez vos candidatures, préparez vos entretiens",
 };
-
 export default async function RootLayout({
   children,
 }: {
@@ -23,16 +23,20 @@ export default async function RootLayout({
         {user ? (
           <div className="flex min-h-screen">
             <Sidebar />
-            <div className="flex-1">
+            <div className="flex flex-1 flex-col">
               <header className="flex items-center justify-end border-b px-8 py-3">
                 <span className="mr-4 text-sm text-gray-600">{user.email}</span>
                 <LogoutButton />
               </header>
-              <main className="p-8">{children}</main>
+              <main className="flex-1 p-8">{children}</main>
+              <Footer />
             </div>
           </div>
         ) : (
-          <>{children}</>
+          <div className="flex min-h-screen flex-col">
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         )}
       </body>
     </html>
