@@ -14,10 +14,14 @@ export default function Documents({
   id,
   cvPath,
   lmPath,
+  cvReference,
+  lmReference,
 }: {
   id: string;
   cvPath: string | null;
   lmPath: string | null;
+  cvReference: string | null;
+  lmReference: string | null;
 }) {
   const [erreur, setErreur] = useState("");
   const [enCours, setEnCours] = useState("");
@@ -58,10 +62,45 @@ export default function Documents({
     }
 
     const colonne = type === "cv" ? "cv_path" : "lm_path";
-    await supabase
-      .from("candidatures")
-      .update({ [colonne]: chemin })
-      .eq("id", id);
+    await supabase.from("candidatures").update({ [colonne]: chemin }).eq("id", id);
+
+    setEnCours("");
+    router.refresh();
+  }
+
+  async function utiliserReference(cheminRef: string, type: "cv" | "lm") {
+    setEnCours(type);
+    setErreur("");
+
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: fichier, error: erreurDl } = await supabase.storage
+      .from("documents")
+      .download(cheminRef);
+
+    if (erreurDl || !fichier) {
+      setErreur("Document de référence illisible.");
+      setEnCours("");
+      return;
+    }
+
+    const extension = cheminRef.split(".").pop();
+    const chemin = `${user.id}/${id}-${type}.${extension}`;
+
+    const { error: erreurUp } = await supabase.storage
+      .from("documents")
+      .upload(chemin, fichier, { upsert: true });
+
+    if (erreurUp) {
+      setErreur(erreurUp.message);
+      setEnCours("");
+      return;
+    }
+
+    const colonne = type === "cv" ? "cv_path" : "lm_path";
+    await supabase.from("candidatures").update({ [colonne]: chemin }).eq("id", id);
 
     setEnCours("");
     router.refresh();
@@ -81,54 +120,65 @@ export default function Documents({
     await supabase.storage.from("documents").remove([chemin]);
 
     const colonne = type === "cv" ? "cv_path" : "lm_path";
-    await supabase
-      .from("candidatures")
-      .update({ [colonne]: null })
-      .eq("id", id);
+    await supabase.from("candidatures").update({ [colonne]: null }).eq("id", id);
 
     router.refresh();
   }
     function Ligne({
     label,
     chemin,
+    reference,
     type,
   }: {
     label: string;
     chemin: string | null;
+    reference: string | null;
     type: "cv" | "lm";
   }) {
     return (
-      <div className="flex items-center justify-between px-5 py-3 text-sm">
-        <span className="text-gray-500">{label}</span>
+      <div className="px-4 py-3 text-sm">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-gray-500">{label}</span>
 
-        {chemin ? (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => telecharger(chemin)}
-              className="text-blue-600 hover:underline"
-            >
-              Ouvrir
-            </button>
-            <button
-              onClick={() => supprimer(chemin, type)}
-              className="text-red-600 hover:underline"
-            >
-              Retirer
-            </button>
-          </div>
-        ) : (
-          <label className="cursor-pointer text-blue-600 hover:underline">
-            {enCours === type ? "Envoi..." : "Ajouter"}
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) upload(f, type);
-              }}
-            />
-          </label>
+          {chemin ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => telecharger(chemin)}
+                className="text-blue-600 hover:underline"
+              >
+                Ouvrir
+              </button>
+              <button
+                onClick={() => supprimer(chemin, type)}
+                className="text-red-600 hover:underline"
+              >
+                Retirer
+              </button>
+            </div>
+          ) : (
+            <label className="cursor-pointer text-blue-600 hover:underline">
+              {enCours === type ? "Envoi..." : "Téléverser"}
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) upload(f, type);
+                }}
+              />
+            </label>
+          )}
+        </div>
+
+        {!chemin && reference && (
+          <button
+            onClick={() => utiliserReference(reference, type)}
+            disabled={enCours === type}
+            className="mt-1 text-xs text-gray-500 hover:underline disabled:opacity-50"
+          >
+            Utiliser mon {type === "cv" ? "CV" : "modèle"} de référence
+          </button>
         )}
       </div>
     );
@@ -136,21 +186,25 @@ export default function Documents({
 
   return (
     <section className="rounded-lg border">
-      <h2 className="border-b px-5 py-3 font-semibold">Documents</h2>
+      <h2 className="border-b px-4 py-3 font-semibold">Documents</h2>
       <div className="divide-y">
-        <Ligne label="CV" chemin={cvPath} type="cv" />
-        <Ligne label="Lettre de motivation" chemin={lmPath} type="lm" />
+        <Ligne label="CV" chemin={cvPath} reference={cvReference} type="cv" />
+        <Ligne
+          label="Lettre de motivation"
+          chemin={lmPath}
+          reference={lmReference}
+          type="lm"
+        />
       </div>
 
       {cvPath && !cvEstPdf && (
-        <p className="border-t bg-amber-50 px-5 py-3 text-xs text-amber-800">
+        <p className="border-t bg-amber-50 px-4 py-3 text-xs text-amber-800">
           Votre CV est au format Word. L&apos;analyse de correspondance et la
-          préparation d&apos;entretien nécessitent un PDF. Enregistrez-le en PDF
-          depuis Word puis remplacez-le ici.
+          préparation d&apos;entretien nécessitent un PDF.
         </p>
       )}
 
-      {erreur && <p className="px-5 pb-3 text-sm text-red-600">{erreur}</p>}
+      {erreur && <p className="px-4 pb-3 text-sm text-red-600">{erreur}</p>}
     </section>
   );
 }

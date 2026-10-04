@@ -47,6 +47,12 @@ export default async function FicheCandidature({
 
   if (!c) notFound();
 
+  const { data: profil } = await supabase
+    .from("profils")
+    .select("cv_reference_path, lm_reference_path")
+    .eq("id", user.id)
+    .maybeSingle();
+
   const { data: historique } = await supabase
     .from("historique_statuts")
     .select("*")
@@ -105,7 +111,15 @@ export default async function FicheCandidature({
   const blocEntreprise = (
     <FicheEntreprise id={c.id} ficheInitiale={c.fiche_entreprise} />
   );
-  const blocDocuments = <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />;
+  const blocDocuments = (
+    <Documents
+      id={c.id}
+      cvPath={c.cv_path}
+      lmPath={c.lm_path}
+      cvReference={profil?.cv_reference_path ?? null}
+      lmReference={profil?.lm_reference_path ?? null}
+    />
+  );
   const blocCorrespondance = (
     <Correspondance
       id={c.id}

@@ -84,7 +84,8 @@ export default async function Statistiques() {
       delaiMoyen = Math.round(delais.reduce((a, b) => a + b, 0) / delais.length);
     }
   }
-    const kpis = [
+
+  const kpis = [
     { label: "Envoyées", valeur: envoyees.length },
     {
       label: "Taux de réponse",
@@ -103,55 +104,7 @@ export default async function Statistiques() {
     },
   ];
 
-  const parSource = regrouper(liste, "source");
-  const parPoste = regrouper(liste, "poste");
-  const parContrat = regrouper(liste, "type_contrat");
-
-  function Bloc({ titre, lignes }: { titre: string; lignes: Ligne[] }) {
-    const pertinentes = lignes.filter((l) => l.total >= 3);
-
-    return (
-      <section className="rounded-lg border">
-        <div className="border-b px-4 py-3">
-          <h2 className="font-semibold">{titre}</h2>
-          <p className="text-xs text-gray-500">3 candidatures minimum</p>
-        </div>
-
-        {pertinentes.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-gray-400">
-            Pas encore assez de données.
-          </p>
-        ) : (
-          <ul className="divide-y">
-            {pertinentes.map((l) => (
-              <li key={l.cle} className="px-4 py-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="min-w-0 truncate font-medium">{l.cle}</span>
-                  <span className="shrink-0 text-xs text-gray-500">
-                    {l.total} candidature{l.total > 1 ? "s" : ""}
-                  </span>
-                </div>
-                <div className="mt-1 flex gap-4 text-xs">
-                  <span className="text-gray-500">
-                    Réponses{" "}
-                    <strong className="text-gray-900">
-                      {pourcent(l.reponses, l.total)}
-                    </strong>
-                  </span>
-                  <span className="text-gray-500">
-                    Entretiens{" "}
-                    <strong className="text-violet-700">
-                      {pourcent(l.entretiens, l.total)}
-                    </strong>
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    );
-  }
+  const parSource = regrouper(liste, "source").filter((l) => l.total >= 3);
     return (
     <div>
       <h1 className="text-2xl font-bold md:text-3xl">Statistiques</h1>
@@ -184,17 +137,47 @@ export default async function Statistiques() {
         </div>
       )}
 
-      <div className="mt-6 space-y-4">
-        <Bloc titre="Par source" lignes={parSource} />
-        <Bloc titre="Par poste" lignes={parPoste} />
-        <Bloc titre="Par type de contrat" lignes={parContrat} />
-      </div>
+      <section className="mt-6 rounded-lg border">
+        <div className="border-b px-4 py-3">
+          <h2 className="font-semibold">Par source</h2>
+          <p className="text-xs text-gray-500">
+            Quelles plateformes vous donnent le plus de retours
+          </p>
+        </div>
 
-      <p className="mt-6 text-xs text-gray-400">
-        Les statistiques calculées sur moins de 3 candidatures ne sont pas
-        affichées : un taux établi sur un trop petit nombre de cas n&apos;est pas
-        représentatif.
-      </p>
+        {parSource.length === 0 ? (
+          <p className="px-4 py-6 text-sm text-gray-400">
+            Pas encore assez de données. Trois candidatures minimum par source.
+          </p>
+        ) : (
+          <ul className="divide-y">
+            {parSource.map((l) => (
+              <li key={l.cle} className="px-4 py-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="min-w-0 truncate font-medium">{l.cle}</span>
+                  <span className="shrink-0 text-xs text-gray-500">
+                    {l.total} candidature{l.total > 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="mt-1 flex gap-4 text-xs">
+                  <span className="text-gray-500">
+                    Réponses{" "}
+                    <strong className="text-gray-900">
+                      {pourcent(l.reponses, l.total)}
+                    </strong>
+                  </span>
+                  <span className="text-gray-500">
+                    Entretiens{" "}
+                    <strong className="text-violet-700">
+                      {pourcent(l.entretiens, l.total)}
+                    </strong>
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

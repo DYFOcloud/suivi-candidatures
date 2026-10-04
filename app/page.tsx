@@ -86,7 +86,7 @@ export default async function Dashboard() {
       </div>
 
       {(aEnvoyer.length > 0 || relances.length > 0) && (
-        <div className="mt-5 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm">
+               <div className="mt-5 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm md:hidden">
           <span className="font-medium text-orange-900">À faire :</span>
           {aEnvoyer.length > 0 && (
             <span className="text-orange-800">{aEnvoyer.length} à envoyer</span>
