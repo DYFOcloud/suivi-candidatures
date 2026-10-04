@@ -64,7 +64,6 @@ export default async function Dashboard() {
 
   const kpis = [
     { label: "Candidatures", valeur: liste.length },
-    { label: "En attente", valeur: enAttente.length },
     { label: "Entretiens", valeur: entretiens.length },
     {
       label: "Taux de réponse",
@@ -90,9 +89,7 @@ export default async function Dashboard() {
         <div className="mt-5 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm">
           <span className="font-medium text-orange-900">À faire :</span>
           {aEnvoyer.length > 0 && (
-            <span className="text-orange-800">
-              {aEnvoyer.length} à envoyer
-            </span>
+            <span className="text-orange-800">{aEnvoyer.length} à envoyer</span>
           )}
           {aEnvoyer.length > 0 && relances.length > 0 && (
             <span className="text-orange-300">·</span>
@@ -105,7 +102,7 @@ export default async function Dashboard() {
         </div>
       )}
 
-      <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mt-5 grid grid-cols-3 gap-3">
         {kpis.map((k) => (
           <div key={k.label} className="rounded-lg border p-4">
             <p className="text-xs text-gray-500">{k.label}</p>
@@ -158,9 +155,7 @@ export default async function Dashboard() {
           <section className="rounded-lg border">
             <div className="flex items-center justify-between border-b px-3 py-2">
               <h2 className="text-sm font-semibold">Relances à faire</h2>
-              <span className="text-[11px] text-gray-400">
-                +{SEUIL_RELANCE} jours
-              </span>
+              <span className="text-[11px] text-gray-400">+{SEUIL_RELANCE} jours</span>
             </div>
             {relances.length === 0 ? (
               <p className="px-3 py-3 text-xs text-gray-400">Rien à relancer.</p>
