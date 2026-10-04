@@ -68,7 +68,52 @@ export default async function FicheCandidature({
     { label: "Candidature envoyée le", valeur: formatDate(c.date_envoi) },
     { label: "Salaire", valeur: formatSalaire(c.salaire_min, c.salaire_max) },
   ];
-    return (
+
+  const blocDetails = (
+    <section className="rounded-lg border">
+      <h2 className="border-b px-4 py-3 font-semibold">Détails</h2>
+      <dl className="divide-y">
+        {champs.map((champ) => (
+          <div key={champ.label} className="px-4 py-3 text-sm md:flex md:gap-4">
+            <dt className="text-xs text-gray-500 md:w-48 md:shrink-0 md:text-sm">
+              {champ.label}
+            </dt>
+            <dd className="mt-0.5 font-medium md:mt-0">{champ.valeur}</dd>
+          </div>
+        ))}
+        <div className="px-4 py-3 text-sm md:flex md:gap-4">
+          <dt className="text-xs text-gray-500 md:w-48 md:shrink-0 md:text-sm">Lien</dt>
+          <dd className="mt-0.5 font-medium md:mt-0">
+            {c.url_offre ? <LienOffre url={c.url_offre} /> : "—"}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+
+  const blocNotes = (
+    <section className="rounded-lg border">
+      <h2 className="border-b px-4 py-3 font-semibold">Notes</h2>
+      <p className="whitespace-pre-wrap px-4 py-3 text-sm text-gray-700">
+        {c.notes || "Aucune note."}
+      </p>
+    </section>
+  );
+    const blocDocuments = <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />;
+  const blocCorrespondance = (
+    <Correspondance
+      id={c.id}
+      analyseInitiale={c.analyse_json}
+      cvPresent={!!c.cv_path}
+      offrePresente={!!c.offre_texte}
+    />
+  );
+  const blocEntretiens = (
+    <Entretiens candidatureId={c.id} entretiens={entretiens ?? []} />
+  );
+  const blocHistorique = <Historique evenements={historique ?? []} />;
+
+  return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
         Retour aux candidatures
@@ -89,53 +134,26 @@ export default async function FicheCandidature({
           <Actions id={c.id} statutInitial={c.statut} dateEnvoiExistante={c.date_envoi} />
         </div>
       </div>
-            <div className="mt-6 grid gap-4 lg:grid-cols-3">
+
+      <div className="mt-6 space-y-4 md:hidden">
+        {blocDetails}
+        {blocDocuments}
+        {blocCorrespondance}
+        {blocEntretiens}
+        {blocNotes}
+        {blocHistorique}
+      </div>
+
+      <div className="mt-6 hidden gap-4 md:grid lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <section className="rounded-lg border">
-            <h2 className="border-b px-4 py-3 font-semibold">Détails</h2>
-            <dl className="divide-y">
-              {champs.map((champ) => (
-                <div
-                  key={champ.label}
-                  className="px-4 py-3 text-sm md:flex md:gap-4"
-                >
-                  <dt className="text-xs text-gray-500 md:w-48 md:shrink-0 md:text-sm">
-                    {champ.label}
-                  </dt>
-                  <dd className="mt-0.5 font-medium md:mt-0">{champ.valeur}</dd>
-                </div>
-              ))}
-              <div className="px-4 py-3 text-sm md:flex md:gap-4">
-                <dt className="text-xs text-gray-500 md:w-48 md:shrink-0 md:text-sm">
-                  Lien
-                </dt>
-                <dd className="mt-0.5 font-medium md:mt-0">
-                  {c.url_offre ? <LienOffre url={c.url_offre} /> : "—"}
-                </dd>
-              </div>
-            </dl>
-          </section>
-
-          <Entretiens candidatureId={c.id} entretiens={entretiens ?? []} />
-
-          <Correspondance
-            id={c.id}
-            analyseInitiale={c.analyse_json}
-            cvPresent={!!c.cv_path}
-            offrePresente={!!c.offre_texte}
-          />
-
-          <section className="rounded-lg border">
-            <h2 className="border-b px-4 py-3 font-semibold">Notes</h2>
-            <p className="whitespace-pre-wrap px-4 py-3 text-sm text-gray-700">
-              {c.notes || "Aucune note."}
-            </p>
-          </section>
+          {blocDetails}
+          {blocCorrespondance}
+          {blocEntretiens}
+          {blocNotes}
         </div>
-
         <div className="space-y-4">
-          <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />
-          <Historique evenements={historique ?? []} />
+          {blocDocuments}
+          {blocHistorique}
         </div>
       </div>
     </div>
