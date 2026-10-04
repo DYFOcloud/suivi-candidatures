@@ -2,7 +2,14 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-const STATUTS = ["À envoyer", "Envoyée", "Entretien RH", "Proposition", "Refus"];
+const STATUTS = [
+  "À envoyer",
+  "Envoyée",
+  "Entretien RH",
+  "Proposition",
+  "Offre acceptée",
+  "Refus",
+];
 
 export default function Filtres() {
   const router = useRouter();

@@ -5,8 +5,17 @@ import { useRouter } from "next/navigation";
 import { createClient } from "../supabase";
 import ImportOffre, { DonneesOffre } from "./ImportOffre";
 
-const STATUTS = ["À envoyer", "Envoyée", "Entretien RH", "Proposition", "Refus"];
+const STATUTS = [
+  "À envoyer",
+  "Envoyée",
+  "Entretien RH",
+  "Proposition",
+  "Offre acceptée",
+  "Refus",
+];
+
 const CONTRATS = ["CDI", "CDD", "Stage", "Alternance", "Intérim", "Freelance"];
+
 const SOURCES = [
   "LinkedIn",
   "Indeed",

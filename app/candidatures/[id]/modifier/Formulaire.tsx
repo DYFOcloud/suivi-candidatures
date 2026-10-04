@@ -5,8 +5,17 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../../supabase";
 
-const STATUTS = ["À envoyer", "Envoyée", "Entretien RH", "Proposition", "Refus"];
+const STATUTS = [
+  "À envoyer",
+  "Envoyée",
+  "Entretien RH",
+  "Proposition",
+  "Offre acceptée",
+  "Refus",
+];
+
 const CONTRATS = ["CDI", "CDD", "Stage", "Alternance", "Intérim", "Freelance"];
+
 const SOURCES = [
   "LinkedIn",
   "Indeed",
@@ -223,4 +232,3 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
     </div>
   );
 }
-

@@ -5,6 +5,9 @@ export const dynamic = "force-dynamic";
 
 const SEUIL_MINI = 5;
 
+const REPONSES = ["Entretien RH", "Proposition", "Offre acceptée", "Refus"];
+const POSITIFS = ["Entretien RH", "Proposition", "Offre acceptée"];
+
 type Ligne = {
   cle: string;
   total: number;
@@ -25,8 +28,8 @@ function regrouper(
     }
     const l = map.get(cle)!;
     l.total++;
-    if (["Entretien RH", "Proposition", "Refus"].includes(c.statut)) l.reponses++;
-    if (["Entretien RH", "Proposition"].includes(c.statut)) l.entretiens++;
+    if (REPONSES.includes(c.statut)) l.reponses++;
+    if (POSITIFS.includes(c.statut)) l.entretiens++;
   }
 
   return [...map.values()].sort((a, b) => b.total - a.total);
@@ -48,13 +51,12 @@ export default async function Statistiques() {
 
   const liste = candidatures ?? [];
   const envoyees = liste.filter((c) => c.statut !== "À envoyer");
-  const reponses = liste.filter((c) =>
-    ["Entretien RH", "Proposition", "Refus"].includes(c.statut)
+  const reponses = liste.filter((c) => REPONSES.includes(c.statut));
+  const entretiens = liste.filter((c) => POSITIFS.includes(c.statut));
+  const propositions = liste.filter((c) =>
+    ["Proposition", "Offre acceptée"].includes(c.statut)
   );
-  const entretiens = liste.filter((c) =>
-    ["Entretien RH", "Proposition"].includes(c.statut)
-  );
-  const propositions = liste.filter((c) => c.statut === "Proposition");
+  const acceptees = liste.filter((c) => c.statut === "Offre acceptée");
 
   const assez = envoyees.length >= SEUIL_MINI;
 
@@ -65,9 +67,7 @@ export default async function Statistiques() {
       if (!c.date_envoi) continue;
       const premiereReponse = historique
         .filter(
-          (h) =>
-            h.candidature_id === c.id &&
-            ["Entretien RH", "Proposition", "Refus"].includes(h.nouveau_statut)
+          (h) => h.candidature_id === c.id && REPONSES.includes(h.nouveau_statut)
         )
         .sort((a, b) => (a.date_evenement > b.date_evenement ? 1 : -1))[0];
 
@@ -169,10 +169,18 @@ export default async function Statistiques() {
         ))}
       </div>
 
-      {propositions.length > 0 && (
+      {acceptees.length > 0 && (
+        <div className="mt-3 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
+          {acceptees.length} offre{acceptees.length > 1 ? "s" : ""} acceptée
+          {acceptees.length > 1 ? "s" : ""}
+        </div>
+      )}
+
+      {propositions.length > acceptees.length && (
         <div className="mt-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-          {propositions.length} proposition{propositions.length > 1 ? "s" : ""} reçue
-          {propositions.length > 1 ? "s" : ""}
+          {propositions.length - acceptees.length} proposition
+          {propositions.length - acceptees.length > 1 ? "s" : ""} en attente de
+          décision
         </div>
       )}
 

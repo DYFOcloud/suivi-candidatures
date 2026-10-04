@@ -4,7 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../supabase";
 
-const STATUTS = ["À envoyer", "Envoyée", "Entretien RH", "Proposition", "Refus"];
+const STATUTS = [
+  "À envoyer",
+  "Envoyée",
+  "Entretien RH",
+  "Proposition",
+  "Offre acceptée",
+  "Refus",
+];
 
 export default function Actions({
   id,
