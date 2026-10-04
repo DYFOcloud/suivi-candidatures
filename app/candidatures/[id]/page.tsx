@@ -7,6 +7,7 @@ import Documents from "./Documents";
 import Historique from "./Historique";
 import Correspondance from "./Correspondance";
 import Entretiens from "./Entretiens";
+import FicheEntreprise from "./FicheEntreprise";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
@@ -101,6 +102,9 @@ export default async function FicheCandidature({
     </section>
   );
 
+  const blocEntreprise = (
+    <FicheEntreprise id={c.id} ficheInitiale={c.fiche_entreprise} />
+  );
   const blocDocuments = <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />;
   const blocCorrespondance = (
     <Correspondance
@@ -143,6 +147,7 @@ export default async function FicheCandidature({
 
       <div className="mt-6 space-y-4 md:hidden">
         {blocDetails}
+        {blocEntreprise}
         {blocDocuments}
         {blocCorrespondance}
         {blocEntretiens}
@@ -153,6 +158,7 @@ export default async function FicheCandidature({
       <div className="mt-6 hidden gap-4 md:grid lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           {blocDetails}
+          {blocEntreprise}
           {blocCorrespondance}
           {blocEntretiens}
           {blocNotes}
