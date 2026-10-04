@@ -2,18 +2,15 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-t px-8 py-4">
-      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+    <footer className="border-t px-4 py-4 md:px-8">
+      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
         <span>Joply</span>
-        <Link href="/mentions-legales" className="hover:underline">
+        <Link href="/mentions-legales" className="hover:text-gray-600">
           Mentions légales
         </Link>
-        <Link href="/confidentialite" className="hover:underline">
+        <Link href="/confidentialite" className="hover:text-gray-600">
           Confidentialité
         </Link>
-        <a href="mailto:contact@joply.fr" className="hover:underline">
-          contact@joply.fr
-        </a>
       </div>
     </footer>
   );
