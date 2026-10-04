@@ -19,11 +19,18 @@ export default function Filtres() {
   const statut = params.get("statut") ?? "";
   const recherche = params.get("q") ?? "";
   const tri = params.get("tri") ?? "recent";
+  const archivees = params.get("archivees") ?? "";
 
   function modifier(cle: string, valeur: string) {
     const nouveaux = new URLSearchParams(params.toString());
     if (valeur) nouveaux.set(cle, valeur);
     else nouveaux.delete(cle);
+    router.push(`${pathname}?${nouveaux.toString()}`);
+  }
+
+  function reinitialiser() {
+    const nouveaux = new URLSearchParams();
+    if (archivees) nouveaux.set("archivees", archivees);
     router.push(`${pathname}?${nouveaux.toString()}`);
   }
 
@@ -62,7 +69,7 @@ export default function Filtres() {
 
         {actif && (
           <button
-            onClick={() => router.push(pathname)}
+            onClick={reinitialiser}
             className="text-sm text-gray-500 hover:underline"
           >
             Réinitialiser

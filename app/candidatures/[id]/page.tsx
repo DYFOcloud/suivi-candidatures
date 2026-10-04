@@ -2,6 +2,7 @@ import { createClient } from "../../supabase-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import Actions from "./Actions";
+import Archiver from "./Archiver";
 import Documents from "./Documents";
 import Historique from "./Historique";
 import Correspondance from "./Correspondance";
@@ -99,7 +100,8 @@ export default async function FicheCandidature({
       </p>
     </section>
   );
-    const blocDocuments = <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />;
+
+  const blocDocuments = <Documents id={c.id} cvPath={c.cv_path} lmPath={c.lm_path} />;
   const blocCorrespondance = (
     <Correspondance
       id={c.id}
@@ -108,16 +110,19 @@ export default async function FicheCandidature({
       offrePresente={!!c.offre_texte}
     />
   );
-  const blocEntretiens = (
-    <Entretiens candidatureId={c.id} entretiens={entretiens ?? []} />
-  );
+  const blocEntretiens = <Entretiens candidatureId={c.id} entretiens={entretiens ?? []} />;
   const blocHistorique = <Historique evenements={historique ?? []} />;
-
-  return (
+    return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
         Retour aux candidatures
       </Link>
+
+      {c.archivee && (
+        <div className="mt-4 rounded-lg border bg-gray-100 px-4 py-2 text-sm text-gray-600">
+          Cette candidature est archivée.
+        </div>
+      )}
 
       <div className="mt-4 space-y-3 md:flex md:items-start md:justify-between md:space-y-0">
         <div className="min-w-0">
@@ -125,6 +130,7 @@ export default async function FicheCandidature({
           <p className="mt-1 text-gray-600 md:text-lg">{c.entreprise}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Archiver id={c.id} archivee={c.archivee ?? false} />
           <Link
             href={`/candidatures/${c.id}/modifier`}
             className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"

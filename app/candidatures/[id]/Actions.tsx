@@ -28,16 +28,27 @@ export default function Actions({
   const router = useRouter();
 
   async function changerStatut(nouveau: string) {
+    const ancien = statut;
     setStatut(nouveau);
     setLoading(true);
 
     const supabase = createClient();
-    const modifs: { statut: string; date_envoi?: string | null } = { statut: nouveau };
+    const modifs: {
+      statut: string;
+      date_envoi?: string | null;
+      archivee?: boolean;
+    } = { statut: nouveau };
 
     if (nouveau === "À envoyer") {
       modifs.date_envoi = null;
     } else if (nouveau === "Envoyée" && !dateEnvoiExistante) {
       modifs.date_envoi = new Date().toISOString().slice(0, 10);
+    }
+
+    if (nouveau === "Refus") {
+      modifs.archivee = true;
+    } else if (ancien === "Refus") {
+      modifs.archivee = false;
     }
 
     await supabase.from("candidatures").update(modifs).eq("id", id);

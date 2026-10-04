@@ -21,9 +21,14 @@ function formatSalaire(min: number | null, max: number | null) {
 export default async function Candidatures({
   searchParams,
 }: {
-  searchParams: Promise<{ statut?: string; q?: string; tri?: string }>;
+  searchParams: Promise<{
+    statut?: string;
+    q?: string;
+    tri?: string;
+    archivees?: string;
+  }>;
 }) {
-  const { statut, q, tri } = await searchParams;
+  const { statut, q, tri, archivees } = await searchParams;
 
   const supabase = await createClient();
 
@@ -31,6 +36,12 @@ export default async function Candidatures({
   if (!user) redirect("/login");
 
   let requete = supabase.from("candidatures").select("*");
+
+  if (archivees === "1") {
+    requete = requete.eq("archivee", true);
+  } else {
+    requete = requete.or("archivee.is.null,archivee.eq.false");
+  }
 
   if (statut) requete = requete.eq("statut", statut);
   if (q) requete = requete.or(`entreprise.ilike.%${q}%,poste.ilike.%${q}%`);
@@ -41,6 +52,11 @@ export default async function Candidatures({
 
   const { data: candidatures, error } = await requete;
 
+  const { count: nbArchivees } = await supabase
+    .from("candidatures")
+    .select("*", { count: "exact", head: true })
+    .eq("archivee", true);
+
   if (error) {
     return <p className="text-red-600">Erreur : {error.message}</p>;
   }
@@ -48,7 +64,9 @@ export default async function Candidatures({
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold md:text-3xl">Candidatures</h1>
+          <h1 className="text-2xl font-bold md:text-3xl">
+            {archivees === "1" ? "Candidatures archivées" : "Candidatures"}
+          </h1>
           <p className="mt-1 text-sm text-gray-600">
             {candidatures?.length ?? 0} résultat
             {(candidatures?.length ?? 0) > 1 ? "s" : ""}
@@ -102,7 +120,8 @@ export default async function Candidatures({
               </div>
             ))}
           </div>
-                    <div className="mt-6 hidden overflow-x-auto rounded-lg border md:block">
+
+          <div className="mt-6 hidden overflow-x-auto rounded-lg border md:block">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
                 <tr>
@@ -143,6 +162,24 @@ export default async function Candidatures({
             </table>
           </div>
         </>
+      )}
+            {archivees === "1" ? (
+        <Link
+          href="/candidatures"
+          className="mt-6 inline-block rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+        >
+          Retour aux candidatures actives
+        </Link>
+      ) : (
+        (nbArchivees ?? 0) > 0 && (
+          <Link
+            href="/candidatures?archivees=1"
+            className="mt-6 inline-block rounded-lg border bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
+            Voir les {nbArchivees} candidature{nbArchivees! > 1 ? "s" : ""} archivée
+            {nbArchivees! > 1 ? "s" : ""}
+          </Link>
+        )
       )}
     </div>
   );
