@@ -34,6 +34,7 @@ export default async function Dashboard() {
   const { data: candidatures } = await supabase
     .from("candidatures")
     .select("*")
+    .or("archivee.is.null,archivee.eq.false")
     .order("created_at", { ascending: false });
 
   const { data: activite } = await supabase
@@ -86,11 +87,11 @@ export default async function Dashboard() {
       </div>
 
       {(aEnvoyer.length > 0 || relances.length > 0) && (
-        <div className="mt-6 flex flex-wrap gap-3 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm">
+        <div className="mt-5 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm">
           <span className="font-medium text-orange-900">À faire :</span>
           {aEnvoyer.length > 0 && (
             <span className="text-orange-800">
-              {aEnvoyer.length} candidature{aEnvoyer.length > 1 ? "s" : ""} à envoyer
+              {aEnvoyer.length} à envoyer
             </span>
           )}
           {aEnvoyer.length > 0 && relances.length > 0 && (
@@ -98,13 +99,13 @@ export default async function Dashboard() {
           )}
           {relances.length > 0 && (
             <span className="text-orange-800">
-              {relances.length} relance{relances.length > 1 ? "s" : ""} à faire
+              {relances.length} relance{relances.length > 1 ? "s" : ""}
             </span>
           )}
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map((k) => (
           <div key={k.label} className="rounded-lg border p-4">
             <p className="text-xs text-gray-500">{k.label}</p>
@@ -114,38 +115,7 @@ export default async function Dashboard() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <section className="rounded-lg border">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <h2 className="font-semibold">Relances à faire</h2>
-            <span className="text-xs text-gray-500">
-              sans réponse depuis {SEUIL_RELANCE} jours
-            </span>
-          </div>
-          {relances.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-gray-400">Rien à relancer.</p>
-          ) : (
-            <ul className="divide-y">
-              {relances.slice(0, 6).map((c) => (
-                <li key={c.id} className="flex items-center justify-between px-4 py-3">
-                  <div className="min-w-0">
-                    <Link
-                      href={`/candidatures/${c.id}`}
-                      className="text-sm font-medium hover:underline"
-                    >
-                      {c.entreprise}
-                    </Link>
-                    <p className="truncate text-xs text-gray-500">{c.poste}</p>
-                  </div>
-                  <span className="shrink-0 text-xs font-medium text-orange-700">
-                    {joursDepuis(c.date_envoi)} jours
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <section className="rounded-lg border">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <h2 className="font-semibold">À envoyer</h2>
@@ -162,8 +132,8 @@ export default async function Dashboard() {
             </p>
           ) : (
             <ul className="divide-y">
-              {aEnvoyer.slice(0, 6).map((c) => (
-                <li key={c.id} className="flex items-center justify-between px-4 py-3">
+              {aEnvoyer.slice(0, 8).map((c) => (
+                <li key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
                   <div className="min-w-0">
                     <Link
                       href={`/candidatures/${c.id}`}
@@ -183,48 +153,77 @@ export default async function Dashboard() {
             </ul>
           )}
         </section>
-      </div>
-            <section className="mt-4 rounded-lg border">
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <h2 className="font-semibold">Activité récente</h2>
-          <Link href="/candidatures" className="text-xs text-gray-500 hover:underline">
-            Toutes les candidatures
-          </Link>
+
+        <div className="space-y-4">
+          <section className="rounded-lg border">
+            <div className="flex items-center justify-between border-b px-3 py-2">
+              <h2 className="text-sm font-semibold">Relances à faire</h2>
+              <span className="text-[11px] text-gray-400">
+                +{SEUIL_RELANCE} jours
+              </span>
+            </div>
+            {relances.length === 0 ? (
+              <p className="px-3 py-3 text-xs text-gray-400">Rien à relancer.</p>
+            ) : (
+              <ul className="divide-y">
+                {relances.slice(0, 5).map((c) => (
+                  <li key={c.id} className="flex items-center justify-between gap-2 px-3 py-2">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/candidatures/${c.id}`}
+                        className="text-xs font-medium hover:underline"
+                      >
+                        {c.entreprise}
+                      </Link>
+                      <p className="truncate text-[11px] text-gray-500">{c.poste}</p>
+                    </div>
+                    <span className="shrink-0 text-[11px] font-medium text-orange-700">
+                      {joursDepuis(c.date_envoi)} j
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="rounded-lg border">
+            <div className="flex items-center justify-between border-b px-3 py-2">
+              <h2 className="text-sm font-semibold">Activité récente</h2>
+              <Link href="/candidatures" className="text-[11px] text-gray-400 hover:underline">
+                Tout voir
+              </Link>
+            </div>
+            {!activite || activite.length === 0 ? (
+              <p className="px-3 py-3 text-xs text-gray-400">Aucune activité.</p>
+            ) : (
+              <ul className="divide-y">
+                {activite.map((a) => (
+                  <li key={a.id} className="flex items-center justify-between gap-2 px-3 py-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          couleurs[a.nouveau_statut] ?? "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {a.nouveau_statut}
+                      </span>
+                      <Link
+                        href={`/candidatures/${a.candidature_id}`}
+                        className="truncate text-xs font-medium hover:underline"
+                      >
+                        {a.candidatures?.entreprise ?? "—"}
+                      </Link>
+                    </div>
+                    <span className="shrink-0 text-[11px] text-gray-400">
+                      {formatDate(a.date_evenement)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
-        {!activite || activite.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-gray-400">Aucune activité.</p>
-        ) : (
-          <ul className="divide-y">
-            {activite.map((a) => (
-              <li key={a.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      couleurs[a.nouveau_statut] ?? "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {a.nouveau_statut}
-                  </span>
-                  <div className="min-w-0">
-                    <Link
-                      href={`/candidatures/${a.candidature_id}`}
-                      className="text-sm font-medium hover:underline"
-                    >
-                      {a.candidatures?.entreprise ?? "—"}
-                    </Link>
-                    <p className="truncate text-xs text-gray-500">
-                      {a.candidatures?.poste ?? ""}
-                    </p>
-                  </div>
-                </div>
-                <span className="shrink-0 text-xs text-gray-500">
-                  {formatDate(a.date_evenement)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      </div>
     </div>
   );
 }
