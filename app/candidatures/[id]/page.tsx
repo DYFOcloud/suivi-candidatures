@@ -8,6 +8,7 @@ import Historique from "./Historique";
 import Correspondance from "./Correspondance";
 import Entretiens from "./Entretiens";
 import FicheEntreprise from "./FicheEntreprise";
+import Notes from "./Notes";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
@@ -98,14 +99,7 @@ export default async function FicheCandidature({
     </section>
   );
 
-  const blocNotes = (
-    <section className="rounded-lg border">
-      <h2 className="border-b px-4 py-3 font-semibold">Notes</h2>
-      <p className="whitespace-pre-wrap px-4 py-3 text-sm text-gray-700">
-        {c.notes || "Aucune note."}
-      </p>
-    </section>
-  );
+  const blocNotes = <Notes id={c.id} notesInitiales={c.notes} />;
 
   const blocEntreprise = (
     <FicheEntreprise id={c.id} ficheInitiale={c.fiche_entreprise} />
