@@ -9,16 +9,11 @@ import Correspondance from "./Correspondance";
 import Entretiens from "./Entretiens";
 import FicheEntreprise from "./FicheEntreprise";
 import Notes from "./Notes";
+import { formatSalaire } from "../../constantes";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("fr-FR");
-}
-
-function formatSalaire(min: number | null, max: number | null) {
-  if (!min && !max) return "—";
-  if (min && max) return `${min / 1000}–${max / 1000} k€`;
-  return `${(min ?? max)! / 1000} k€`;
 }
 
 function LienOffre({ url }: { url: string }) {
@@ -70,12 +65,22 @@ export default async function FicheCandidature({
     { label: "Entreprise", valeur: c.entreprise },
     { label: "Poste", valeur: c.poste },
     { label: "Lieu", valeur: c.lieu ?? "—" },
-    { label: "Type de contrat", valeur: c.type_contrat ?? "—" },
+    {
+      label: "Type de contrat",
+      valeur: c.type_contrat
+        ? c.duree_contrat
+          ? `${c.type_contrat} — ${c.duree_contrat}`
+          : c.type_contrat
+        : "—",
+    },
     { label: "Source", valeur: c.source ?? "—" },
     { label: "Référence", valeur: c.reference ?? "—" },
     { label: "Offre publiée le", valeur: formatDate(c.date_publication) },
     { label: "Candidature envoyée le", valeur: formatDate(c.date_envoi) },
-    { label: "Salaire", valeur: formatSalaire(c.salaire_min, c.salaire_max) },
+    {
+      label: "Salaire brut",
+      valeur: formatSalaire(c.salaire_min, c.salaire_max, c.salaire_periodicite),
+    },
   ];
     const blocDetails = (
     <section className="rounded-lg border">
@@ -125,7 +130,7 @@ export default async function FicheCandidature({
 
   const blocEntretiens = <Entretiens candidatureId={c.id} entretiens={entretiens ?? []} />;
   const blocHistorique = <Historique evenements={historique ?? []} />;
-    return (
+  return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
         Retour aux candidatures

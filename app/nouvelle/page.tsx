@@ -4,37 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../supabase";
 import ImportOffre, { DonneesOffre } from "./ImportOffre";
-
-const STATUTS = [
-  "À envoyer",
-  "Envoyée",
-  "Entretien RH",
-  "Proposition",
-  "Offre acceptée",
-  "Refus",
-];
-
-const CONTRATS = ["CDI", "CDD", "Stage", "Alternance", "Intérim", "Freelance"];
-
-const SOURCES = [
-  "LinkedIn",
-  "Indeed",
-  "HelloWork",
-  "Welcome to the Jungle",
-  "APEC",
-  "France Travail",
-  "Site carrière",
-  "Cabinet de recrutement",
-  "Cooptation",
-  "Candidature spontanée",
-  "Autre",
-];
+import {
+  STATUTS,
+  CONTRATS,
+  CONTRATS_AVEC_DUREE,
+  SOURCES,
+  PERIODICITES,
+} from "../constantes";
 
 export default function Nouvelle() {
   const [entreprise, setEntreprise] = useState("");
   const [poste, setPoste] = useState("");
   const [lieu, setLieu] = useState("");
   const [typeContrat, setTypeContrat] = useState("");
+  const [dureeContrat, setDureeContrat] = useState("");
   const [source, setSource] = useState("");
   const [statut, setStatut] = useState("À envoyer");
   const [datePublication, setDatePublication] = useState("");
@@ -42,6 +25,7 @@ export default function Nouvelle() {
   const [reference, setReference] = useState("");
   const [salaireMin, setSalaireMin] = useState("");
   const [salaireMax, setSalaireMax] = useState("");
+  const [periodicite, setPeriodicite] = useState("annuel");
   const [urlOffre, setUrlOffre] = useState("");
   const [notes, setNotes] = useState("");
   const [offreTexte, setOffreTexte] = useState("");
@@ -49,6 +33,8 @@ export default function Nouvelle() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+
+  const afficherDuree = CONTRATS_AVEC_DUREE.includes(typeContrat);
 
   function remplir(d: DonneesOffre, texteBrut: string) {
     if (d.entreprise) setEntreprise(d.entreprise);
@@ -87,6 +73,7 @@ export default function Nouvelle() {
       poste,
       lieu: lieu || null,
       type_contrat: typeContrat || null,
+      duree_contrat: afficherDuree ? dureeContrat || null : null,
       source: source || null,
       statut,
       date_publication: datePublication || null,
@@ -94,6 +81,7 @@ export default function Nouvelle() {
       reference: reference || null,
       salaire_min: salaireMin ? Number(salaireMin) : null,
       salaire_max: salaireMax ? Number(salaireMax) : null,
+      salaire_periodicite: periodicite,
       url_offre: urlOffre || null,
       notes: notes || null,
       offre_texte: offreTexte || null,
@@ -145,6 +133,18 @@ export default function Nouvelle() {
           </div>
         </div>
 
+        {afficherDuree && (
+          <div>
+            <label className={label}>Durée</label>
+            <input
+              className={champ}
+              value={dureeContrat}
+              onChange={(e) => setDureeContrat(e.target.value)}
+              placeholder="6 mois, 2 ans, 12 semaines..."
+            />
+          </div>
+        )}
+
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Source</label>
@@ -187,14 +187,28 @@ export default function Nouvelle() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className={label}>Salaire min</label>
-            <input type="number" className={champ} value={salaireMin} onChange={(e) => setSalaireMin(e.target.value)} />
-          </div>
-          <div>
-            <label className={label}>Salaire max</label>
-            <input type="number" className={champ} value={salaireMax} onChange={(e) => setSalaireMax(e.target.value)} />
+        <div>
+          <label className={label}>Salaire brut</label>
+          <div className="mt-1 grid gap-3 md:grid-cols-3">
+            <input
+              type="number"
+              className={champ}
+              value={salaireMin}
+              onChange={(e) => setSalaireMin(e.target.value)}
+              placeholder="Minimum"
+            />
+            <input
+              type="number"
+              className={champ}
+              value={salaireMax}
+              onChange={(e) => setSalaireMax(e.target.value)}
+              placeholder="Maximum"
+            />
+            <select className={champ} value={periodicite} onChange={(e) => setPeriodicite(e.target.value)}>
+              {PERIODICITES.map((p) => (
+                <option key={p.valeur} value={p.valeur}>{p.label}</option>
+              ))}
+            </select>
           </div>
         </div>
 

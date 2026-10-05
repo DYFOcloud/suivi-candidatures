@@ -3,24 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../supabase";
-
-const STATUTS = [
-  "À envoyer",
-  "Envoyée",
-  "Entretien RH",
-  "Proposition",
-  "Offre acceptée",
-  "Refus",
-];
-
-const couleurs: Record<string, string> = {
-  "À envoyer": "bg-orange-100 text-orange-700",
-  "Envoyée": "bg-blue-100 text-blue-700",
-  "Entretien RH": "bg-violet-100 text-violet-700",
-  "Proposition": "bg-green-100 text-green-700",
-  "Offre acceptée": "bg-emerald-600 text-white",
-  "Refus": "bg-red-100 text-red-700",
-};
+import { STATUTS, COULEURS_STATUT } from "../constantes";
 
 export default function StatutSelect({
   id,
@@ -65,7 +48,7 @@ export default function StatutSelect({
     router.refresh();
   }
 
-  const badge = couleurs[statut] ?? "bg-gray-100 text-gray-700";
+  const badge = COULEURS_STATUT[statut] ?? "bg-gray-100 text-gray-700";
 
   return (
     <select

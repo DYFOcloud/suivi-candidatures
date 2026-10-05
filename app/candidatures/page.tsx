@@ -4,18 +4,13 @@ import Link from "next/link";
 import { Suspense } from "react";
 import Filtres from "./Filtres";
 import StatutSelect from "./StatutSelect";
+import { formatSalaire } from "../constantes";
 
 export const dynamic = "force-dynamic";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("fr-FR");
-}
-
-function formatSalaire(min: number | null, max: number | null) {
-  if (!min && !max) return "—";
-  if (min && max) return `${min / 1000}–${max / 1000} k€`;
-  return `${(min ?? max)! / 1000} k€`;
 }
 
 export default async function Candidatures({
@@ -112,22 +107,29 @@ export default async function Candidatures({
 
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                   {c.lieu && <span>{c.lieu}</span>}
+                  {c.type_contrat && (
+                    <span>
+                      {c.type_contrat}
+                      {c.duree_contrat && ` · ${c.duree_contrat}`}
+                    </span>
+                  )}
                   {c.date_envoi && <span>Envoyée le {formatDate(c.date_envoi)}</span>}
                   {(c.salaire_min || c.salaire_max) && (
-                    <span>{formatSalaire(c.salaire_min, c.salaire_max)}</span>
+                    <span>
+                      {formatSalaire(c.salaire_min, c.salaire_max, c.salaire_periodicite)}
+                    </span>
                   )}
                 </div>
               </div>
             ))}
           </div>
-
-          <div className="mt-6 hidden overflow-x-auto rounded-lg border md:block">
+                    <div className="mt-6 hidden overflow-x-auto rounded-lg border md:block">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
                 <tr>
                   <th className="px-4 py-3">Entreprise</th>
                   <th className="px-4 py-3">Poste</th>
-                  <th className="px-4 py-3">Lieu</th>
+                  <th className="px-4 py-3">Contrat</th>
                   <th className="px-4 py-3">Envoyée le</th>
                   <th className="px-4 py-3">Salaire</th>
                   <th className="px-4 py-3">Statut</th>
@@ -142,12 +144,19 @@ export default async function Candidatures({
                       </Link>
                     </td>
                     <td className="px-4 py-3">{c.poste}</td>
-                    <td className="px-4 py-3 text-gray-600">{c.lieu ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {c.type_contrat ?? "—"}
+                      {c.duree_contrat && (
+                        <span className="block text-xs text-gray-400">
+                          {c.duree_contrat}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-gray-600">
                       {formatDate(c.date_envoi)}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
-                      {formatSalaire(c.salaire_min, c.salaire_max)}
+                      {formatSalaire(c.salaire_min, c.salaire_max, c.salaire_periodicite)}
                     </td>
                     <td className="px-4 py-3">
                       <StatutSelect
@@ -163,7 +172,8 @@ export default async function Candidatures({
           </div>
         </>
       )}
-            {archivees === "1" ? (
+
+      {archivees === "1" ? (
         <Link
           href="/candidatures"
           className="mt-6 inline-block rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"

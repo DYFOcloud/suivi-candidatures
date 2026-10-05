@@ -4,31 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../../supabase";
-
-const STATUTS = [
-  "À envoyer",
-  "Envoyée",
-  "Entretien RH",
-  "Proposition",
-  "Offre acceptée",
-  "Refus",
-];
-
-const CONTRATS = ["CDI", "CDD", "Stage", "Alternance", "Intérim", "Freelance"];
-
-const SOURCES = [
-  "LinkedIn",
-  "Indeed",
-  "HelloWork",
-  "Welcome to the Jungle",
-  "APEC",
-  "France Travail",
-  "Site carrière",
-  "Cabinet de recrutement",
-  "Cooptation",
-  "Candidature spontanée",
-  "Autre",
-];
+import {
+  STATUTS,
+  CONTRATS,
+  CONTRATS_AVEC_DUREE,
+  SOURCES,
+  PERIODICITES,
+} from "../../../constantes";
 
 type Candidature = {
   id: string;
@@ -36,6 +18,7 @@ type Candidature = {
   poste: string;
   lieu: string | null;
   type_contrat: string | null;
+  duree_contrat: string | null;
   source: string | null;
   statut: string;
   date_publication: string | null;
@@ -43,6 +26,7 @@ type Candidature = {
   reference: string | null;
   salaire_min: number | null;
   salaire_max: number | null;
+  salaire_periodicite: string | null;
   url_offre: string | null;
   notes: string | null;
   offre_texte: string | null;
@@ -53,6 +37,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
   const [poste, setPoste] = useState(candidature.poste);
   const [lieu, setLieu] = useState(candidature.lieu ?? "");
   const [typeContrat, setTypeContrat] = useState(candidature.type_contrat ?? "");
+  const [dureeContrat, setDureeContrat] = useState(candidature.duree_contrat ?? "");
   const [source, setSource] = useState(candidature.source ?? "");
   const [statut, setStatut] = useState(candidature.statut);
   const [datePublication, setDatePublication] = useState(candidature.date_publication ?? "");
@@ -60,6 +45,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
   const [reference, setReference] = useState(candidature.reference ?? "");
   const [salaireMin, setSalaireMin] = useState(candidature.salaire_min?.toString() ?? "");
   const [salaireMax, setSalaireMax] = useState(candidature.salaire_max?.toString() ?? "");
+  const [periodicite, setPeriodicite] = useState(candidature.salaire_periodicite ?? "annuel");
   const [urlOffre, setUrlOffre] = useState(candidature.url_offre ?? "");
   const [notes, setNotes] = useState(candidature.notes ?? "");
   const [offreTexte, setOffreTexte] = useState(candidature.offre_texte ?? "");
@@ -68,6 +54,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
 
   const router = useRouter();
   const retour = `/candidatures/${candidature.id}`;
+  const afficherDuree = CONTRATS_AVEC_DUREE.includes(typeContrat);
 
   async function enregistrer() {
     if (!entreprise || !poste) {
@@ -86,6 +73,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
         poste,
         lieu: lieu || null,
         type_contrat: typeContrat || null,
+        duree_contrat: afficherDuree ? dureeContrat || null : null,
         source: source || null,
         statut,
         date_publication: datePublication || null,
@@ -93,6 +81,7 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
         reference: reference || null,
         salaire_min: salaireMin ? Number(salaireMin) : null,
         salaire_max: salaireMax ? Number(salaireMax) : null,
+        salaire_periodicite: periodicite,
         url_offre: urlOffre || null,
         notes: notes || null,
         offre_texte: offreTexte || null,
@@ -145,6 +134,18 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
           </div>
         </div>
 
+        {afficherDuree && (
+          <div>
+            <label className={label}>Durée</label>
+            <input
+              className={champ}
+              value={dureeContrat}
+              onChange={(e) => setDureeContrat(e.target.value)}
+              placeholder="6 mois, 2 ans, 12 semaines..."
+            />
+          </div>
+        )}
+
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className={label}>Source</label>
@@ -187,14 +188,28 @@ export default function Formulaire({ candidature }: { candidature: Candidature }
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className={label}>Salaire min</label>
-            <input type="number" className={champ} value={salaireMin} onChange={(e) => setSalaireMin(e.target.value)} />
-          </div>
-          <div>
-            <label className={label}>Salaire max</label>
-            <input type="number" className={champ} value={salaireMax} onChange={(e) => setSalaireMax(e.target.value)} />
+        <div>
+          <label className={label}>Salaire brut</label>
+          <div className="mt-1 grid gap-3 md:grid-cols-3">
+            <input
+              type="number"
+              className={champ}
+              value={salaireMin}
+              onChange={(e) => setSalaireMin(e.target.value)}
+              placeholder="Minimum"
+            />
+            <input
+              type="number"
+              className={champ}
+              value={salaireMax}
+              onChange={(e) => setSalaireMax(e.target.value)}
+              placeholder="Maximum"
+            />
+            <select className={champ} value={periodicite} onChange={(e) => setPeriodicite(e.target.value)}>
+              {PERIODICITES.map((p) => (
+                <option key={p.valeur} value={p.valeur}>{p.label}</option>
+              ))}
+            </select>
           </div>
         </div>
 
