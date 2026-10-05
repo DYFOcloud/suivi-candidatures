@@ -13,7 +13,7 @@ export default function BoutonImprimer() {
         </p>
       </div>
       <div className="flex gap-2">
-        <Link href="/profil" className="rounded border px-3 py-1.5 text-sm">
+        <Link href="/documents" className="rounded border px-3 py-1.5 text-sm">
           Retour
         </Link>
         <button

@@ -15,13 +15,11 @@ export default function Documents({
   cvPath,
   lmPath,
   cvReference,
-  lmReference,
 }: {
   id: string;
   cvPath: string | null;
   lmPath: string | null;
   cvReference: string | null;
-  lmReference: string | null;
 }) {
   const [erreur, setErreur] = useState("");
   const [enCours, setEnCours] = useState("");
@@ -68,8 +66,10 @@ export default function Documents({
     router.refresh();
   }
 
-  async function utiliserReference(cheminRef: string, type: "cv" | "lm") {
-    setEnCours(type);
+  async function utiliserReference() {
+    if (!cvReference) return;
+
+    setEnCours("cv");
     setErreur("");
 
     const supabase = createClient();
@@ -78,16 +78,16 @@ export default function Documents({
 
     const { data: fichier, error: erreurDl } = await supabase.storage
       .from("documents")
-      .download(cheminRef);
+      .download(cvReference);
 
     if (erreurDl || !fichier) {
-      setErreur("Document de référence illisible.");
+      setErreur("CV de référence illisible.");
       setEnCours("");
       return;
     }
 
-    const extension = cheminRef.split(".").pop();
-    const chemin = `${user.id}/${id}-${type}.${extension}`;
+    const extension = cvReference.split(".").pop();
+    const chemin = `${user.id}/${id}-cv.${extension}`;
 
     const { error: erreurUp } = await supabase.storage
       .from("documents")
@@ -99,8 +99,7 @@ export default function Documents({
       return;
     }
 
-    const colonne = type === "cv" ? "cv_path" : "lm_path";
-    await supabase.from("candidatures").update({ [colonne]: chemin }).eq("id", id);
+    await supabase.from("candidatures").update({ cv_path: chemin }).eq("id", id);
 
     setEnCours("");
     router.refresh();
@@ -127,12 +126,10 @@ export default function Documents({
     function Ligne({
     label,
     chemin,
-    reference,
     type,
   }: {
     label: string;
     chemin: string | null;
-    reference: string | null;
     type: "cv" | "lm";
   }) {
     return (
@@ -171,13 +168,13 @@ export default function Documents({
           )}
         </div>
 
-        {!chemin && reference && (
+        {type === "cv" && !chemin && cvReference && (
           <button
-            onClick={() => utiliserReference(reference, type)}
-            disabled={enCours === type}
+            onClick={utiliserReference}
+            disabled={enCours === "cv"}
             className="mt-1 text-xs text-gray-500 hover:underline disabled:opacity-50"
           >
-            Utiliser mon {type === "cv" ? "CV" : "modèle"} de référence
+            Utiliser mon CV de référence
           </button>
         )}
       </div>
@@ -188,13 +185,8 @@ export default function Documents({
     <section className="rounded-lg border">
       <h2 className="border-b px-4 py-3 font-semibold">Documents</h2>
       <div className="divide-y">
-        <Ligne label="CV" chemin={cvPath} reference={cvReference} type="cv" />
-        <Ligne
-          label="Lettre de motivation"
-          chemin={lmPath}
-          reference={lmReference}
-          type="lm"
-        />
+        <Ligne label="CV" chemin={cvPath} type="cv" />
+        <Ligne label="Lettre de motivation" chemin={lmPath} type="lm" />
       </div>
 
       {cvPath && !cvEstPdf && (

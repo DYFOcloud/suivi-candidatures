@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "../supabase";
 
 export default function OngletCompte({ email }: { email: string }) {
@@ -247,75 +246,51 @@ export default function OngletCompte({ email }: { email: string }) {
           <p className="text-sm text-gray-400">Aucun paiement à ce jour.</p>
         </div>
       </section>
-
-      <section className="rounded-lg border">
-        <h2 className="border-b px-4 py-3 font-semibold">Rapport</h2>
-        <div className="px-4 py-4">
-          <p className="text-sm text-gray-600">
-            Générez un récapitulatif de vos candidatures et entretiens, prêt à
-            imprimer ou à enregistrer en PDF.
-          </p>
-          <Link
-            href="/rapport"
-            className="mt-3 inline-block rounded bg-black px-4 py-2 text-sm text-white"
+            <div className="pt-2">
+        {!confirmeSuppression ? (
+          <button
+            onClick={() => setConfirmeSuppression(true)}
+            className="text-xs text-gray-400 hover:text-red-600"
           >
-            Générer mon rapport
-          </Link>
-        </div>
-      </section>
-            <section className="rounded-lg border border-red-200">
-        <h2 className="border-b border-red-200 bg-red-50 px-4 py-3 font-semibold text-red-900">
-          Supprimer mon compte
-        </h2>
-        <div className="px-4 py-4">
-          {!confirmeSuppression ? (
-            <div>
-              <p className="text-sm text-gray-600">
-                La suppression est définitive. Vos candidatures, entretiens et
-                documents seront effacés immédiatement et ne pourront pas être
-                récupérés.
-              </p>
+            Supprimer mon compte
+          </button>
+        ) : (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+            <p className="text-xs text-gray-700">
+              Suppression définitive. Vos candidatures, entretiens et documents
+              seront effacés et ne pourront pas être récupérés.
+            </p>
+            <p className="mt-2 text-xs text-gray-700">
+              Saisissez <strong>SUPPRIMER</strong> pour confirmer.
+            </p>
+            <input
+              value={saisie}
+              onChange={(e) => setSaisie(e.target.value)}
+              className="mt-1.5 w-40 rounded border px-2 py-1 text-xs"
+              placeholder="SUPPRIMER"
+            />
+            <div className="mt-2 flex gap-2">
               <button
-                onClick={() => setConfirmeSuppression(true)}
-                className="mt-3 rounded border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                onClick={supprimerCompte}
+                disabled={loading}
+                className="rounded bg-red-600 px-3 py-1 text-xs text-white disabled:opacity-50"
               >
-                Supprimer mon compte
+                {loading ? "..." : "Confirmer"}
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmeSuppression(false);
+                  setSaisie("");
+                  setErreur("");
+                }}
+                className="rounded border bg-white px-3 py-1 text-xs"
+              >
+                Annuler
               </button>
             </div>
-          ) : (
-            <div>
-              <p className="text-sm text-gray-700">
-                Pour confirmer, saisissez <strong>SUPPRIMER</strong> ci-dessous.
-              </p>
-              <input
-                value={saisie}
-                onChange={(e) => setSaisie(e.target.value)}
-                className="mt-2 w-48 rounded border px-3 py-2 text-sm"
-                placeholder="SUPPRIMER"
-              />
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={supprimerCompte}
-                  disabled={loading}
-                  className="rounded bg-red-600 px-4 py-2 text-sm text-white disabled:opacity-50"
-                >
-                  {loading ? "Suppression..." : "Confirmer la suppression"}
-                </button>
-                <button
-                  onClick={() => {
-                    setConfirmeSuppression(false);
-                    setSaisie("");
-                    setErreur("");
-                  }}
-                  className="rounded border px-4 py-2 text-sm"
-                >
-                  Annuler
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+          </div>
+        )}
+      </div>
 
       {erreur && <p className="text-sm text-red-600">{erreur}</p>}
     </div>
