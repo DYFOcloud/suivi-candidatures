@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ erreur: "Non autorisé" }, { status: 401 });
   }
 
-  const quota = await verifierQuota(supabase, user.id, "correspondance");
+  const quota = await verifierQuota(supabase, user.id, "correspondance", user.email);
   if (!quota.autorise) {
     return NextResponse.json({ erreur: quota.message }, { status: 429 });
   }

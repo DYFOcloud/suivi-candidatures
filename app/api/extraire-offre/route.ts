@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ erreur: "Non autorisé" }, { status: 401 });
   }
 
-  const quota = await verifierQuota(supabase, user.id, "extraction");
+  const quota = await verifierQuota(supabase, user.id, "extraction", user.email);
   if (!quota.autorise) {
     return NextResponse.json({ erreur: quota.message }, { status: 429 });
   }
@@ -72,7 +72,7 @@ ${texte.slice(0, 15000)}`;
 
     await enregistrerAppel(supabase, user.id, "extraction");
 
-    return NextResponse.json({ ...donnees, _restant: quota.restant - 1 });
+    return NextResponse.json(donnees);
   } catch (e) {
     console.error(e);
     return NextResponse.json(

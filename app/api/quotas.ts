@@ -6,6 +6,8 @@ export const LIMITES = {
   preparation: 10,
 } as const;
 
+const COMPTES_ILLIMITES = ["fatkinedufort@gmail.com"];
+
 export type TypeAppel = keyof typeof LIMITES;
 
 const LIBELLES: Record<TypeAppel, string> = {
@@ -21,10 +23,16 @@ function moisCourant() {
 export async function verifierQuota(
   supabase: SupabaseClient,
   userId: string,
-  type: TypeAppel
+  type: TypeAppel,
+  email?: string
 ): Promise<{ autorise: boolean; message?: string; restant: number }> {
-  const mois = moisCourant();
   const limite = LIMITES[type];
+
+  if (email && COMPTES_ILLIMITES.includes(email)) {
+    return { autorise: true, restant: 9999 };
+  }
+
+  const mois = moisCourant();
 
   const { count, error } = await supabase
     .from("usage_ia")
@@ -33,9 +41,7 @@ export async function verifierQuota(
     .eq("type_appel", type)
     .eq("mois", mois);
 
-  if (error) {
-    return { autorise: true, restant: limite };
-  }
+  if (error) return { autorise: true, restant: limite };
 
   const utilise = count ?? 0;
   const restant = Math.max(0, limite - utilise);

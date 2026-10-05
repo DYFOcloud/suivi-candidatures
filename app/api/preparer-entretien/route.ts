@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ erreur: "Non autorisé" }, { status: 401 });
   }
 
-  const quota = await verifierQuota(supabase, user.id, "preparation");
+  const quota = await verifierQuota(supabase, user.id, "preparation", user.email);
   if (!quota.autorise) {
     return NextResponse.json({ erreur: quota.message }, { status: 429 });
   }
@@ -75,11 +75,11 @@ Format attendu :
 }
 
 Règles :
-- Génère 8 à 12 questions, adaptées à l'étape "${e.etape}" — un entretien RH ne pose pas les mêmes questions qu'un entretien manager ou N+2
+- Génère 8 à 12 questions, adaptées à l'étape "${e.etape}"
 - Les questions doivent être ancrées dans l'offre et le CV, pas génériques
 - Ne fournis PAS de pistes de réponse, uniquement les questions
-- Les questions à poser doivent montrer une vraie préparation, pas des banalités
-${enAnglais ? "- Rédige TOUT le contenu en anglais (questions, thèmes, vigilance, arguments)" : "- Rédige tout le contenu en français"}
+- Les questions à poser doivent montrer une vraie préparation
+${enAnglais ? "- Rédige TOUT le contenu en anglais" : "- Rédige tout le contenu en français"}
 
 Voici le texte de l'offre :
 ${c.offre_texte.slice(0, 15000)}`;
@@ -116,4 +116,3 @@ ${c.offre_texte.slice(0, 15000)}`;
     );
   }
 }
-

@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ erreur: "Non autorisé" }, { status: 401 });
   }
 
-  const quota = await verifierQuota(supabase, user.id, "extraction");
+  const quota = await verifierQuota(supabase, user.id, "extraction", user.email);
   if (!quota.autorise) {
     return NextResponse.json({ erreur: quota.message }, { status: 429 });
   }
@@ -43,7 +43,7 @@ Format attendu :
   "nom": "nom officiel de l'entreprise ou null",
   "localisation": "siège social, ville et pays, ou null",
   "annee_creation": "année de création ou null",
-  "effectif": "ordre de grandeur, par exemple 'environ 5 000 salariés' ou '50 à 200 salariés', ou null",
+  "effectif": "ordre de grandeur, par exemple 'environ 5 000 salariés', ou null",
   "secteur": "secteur d'activité ou null",
   "resume": "présentation de l'entreprise en 6 à 10 lignes maximum, ou null",
   "a_savoir": ["2 à 4 éléments utiles à connaître avant un entretien"],
@@ -55,8 +55,7 @@ RÈGLES IMPÉRATIVES :
 - Si l'entreprise t'est inconnue, ou si plusieurs entreprises portent ce nom sans que tu puisses trancher, mets null partout, "a_savoir" vide, et "fiabilite": "inconnue".
 - Si tu connais l'entreprise mais pas certains champs, remplis uniquement ceux dont tu es sûr et mets "fiabilite": "partielle".
 - Mets "fiabilite": "certaine" uniquement pour une entreprise bien établie que tu connais précisément.
-- Pour l'effectif et l'année de création, un ordre de grandeur approximatif est acceptable, mais jamais une invention.
-- "a_savoir" doit contenir des éléments concrets utiles en entretien : positionnement, actualité structurante, culture, particularité du secteur. Pas de généralités.
+- "a_savoir" doit contenir des éléments concrets utiles en entretien, pas des généralités.
 - Tes connaissances ont une date limite : ne présente pas des informations anciennes comme actuelles.`;
 
   try {
