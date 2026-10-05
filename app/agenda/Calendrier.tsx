@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NouvelEntretien from "./NouvelEntretien";
+import { createClient } from "../supabase";
 
 export type EntretienAgenda = {
   id: string;
@@ -28,7 +30,10 @@ const MOIS = [
 const JOURS = ["L", "M", "M", "J", "V", "S", "D"];
 
 function cleJour(d: Date) {
-  return d.toISOString().slice(0, 10);
+  const annee = d.getFullYear();
+  const mois = String(d.getMonth() + 1).padStart(2, "0");
+  const jour = String(d.getDate()).padStart(2, "0");
+  return `${annee}-${mois}-${jour}`;
 }
 
 function heure(d: string) {
@@ -49,11 +54,20 @@ export default function Calendrier({
   const [mois, setMois] = useState(aujourdhui.getMonth());
   const [annee, setAnnee] = useState(aujourdhui.getFullYear());
   const [jourSelectionne, setJourSelectionne] = useState<string | null>(null);
+  const [suppressionId, setSuppressionId] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function supprimer(id: string) {
+    const supabase = createClient();
+    await supabase.from("entretiens").delete().eq("id", id);
+    setSuppressionId(null);
+    router.refresh();
+  }
 
   const parJour = new Map<string, EntretienAgenda[]>();
   for (const e of entretiens) {
     if (!e.date_entretien) continue;
-    const cle = e.date_entretien.slice(0, 10);
+    const cle = cleJour(new Date(e.date_entretien));
     if (!parJour.has(cle)) parJour.set(cle, []);
     parJour.get(cle)!.push(e);
   }
@@ -91,7 +105,16 @@ export default function Calendrier({
   const entretiensDuJour = jourSelectionne
     ? parJour.get(jourSelectionne) ?? []
     : [];
-      return (
+
+  function libelleJour(cle: string) {
+    const [a, m, j] = cle.split("-").map(Number);
+    return new Date(a, m - 1, j).toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+  }
+    return (
     <div className="space-y-4">
       <section className="rounded-lg border">
         <div className="flex items-center justify-between border-b px-4 py-3">
@@ -122,7 +145,13 @@ export default function Calendrier({
 
         <div className="grid grid-cols-7">
           {cases.map((d, i) => {
-            if (!d) return <div key={i} className="min-h-[80px] border-b border-r md:min-h-[110px]" />;
+            if (!d)
+              return (
+                <div
+                  key={i}
+                  className="min-h-[80px] border-b border-r md:min-h-[110px]"
+                />
+              );
 
             const cle = cleJour(d);
             const duJour = parJour.get(cle) ?? [];
@@ -133,7 +162,10 @@ export default function Calendrier({
             return (
               <button
                 key={i}
-                onClick={() => setJourSelectionne(selectionne ? null : cle)}
+                onClick={() => {
+                  setJourSelectionne(selectionne ? null : cle);
+                  setSuppressionId(null);
+                }}
                 className={`flex min-h-[80px] flex-col items-start gap-0.5 border-b border-r p-1 text-left transition md:min-h-[110px] ${
                   selectionne
                     ? "bg-black text-white"
@@ -177,33 +209,62 @@ export default function Calendrier({
           })}
         </div>
       </section>
-            {jourSelectionne && (
+           {jourSelectionne && (
         <section className="rounded-lg border">
           <h2 className="border-b px-4 py-3 font-semibold">
-            {new Date(jourSelectionne).toLocaleDateString("fr-FR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            })}
+            {libelleJour(jourSelectionne)}
           </h2>
 
           {entretiensDuJour.length > 0 && (
             <ul className="divide-y border-b">
               {entretiensDuJour.map((e) => (
                 <li key={e.id} className="px-4 py-3">
-                  <Link
-                    href={`/candidatures/${e.candidature_id}`}
-                    className="text-sm font-medium hover:underline"
-                  >
-                    {e.candidatures?.entreprise ?? "—"}
-                  </Link>
-                  <p className="text-xs text-gray-500">
-                    {heure(e.date_entretien!)}
-                    {" · "}
-                    {e.etape}
-                    {e.interlocuteur && ` · ${e.interlocuteur}`}
-                    {e.format && ` · ${e.format}`}
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/candidatures/${e.candidature_id}`}
+                        className="text-sm font-medium hover:underline"
+                      >
+                        {e.candidatures?.entreprise ?? "—"}
+                      </Link>
+                      <p className="text-xs text-gray-500">
+                        {heure(e.date_entretien!)}
+                        {" · "}
+                        {e.etape}
+                        {e.interlocuteur && ` · ${e.interlocuteur}`}
+                        {e.format && ` · ${e.format}`}
+                      </p>
+                    </div>
+
+                    {suppressionId !== e.id && (
+                      <button
+                        onClick={() => setSuppressionId(e.id)}
+                        className="shrink-0 text-xs text-gray-400 hover:text-red-600"
+                      >
+                        Supprimer
+                      </button>
+                    )}
+                  </div>
+
+                  {suppressionId === e.id && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-xs text-gray-500">
+                        Supprimer cet entretien ?
+                      </span>
+                      <button
+                        onClick={() => supprimer(e.id)}
+                        className="rounded bg-red-600 px-2 py-1 text-xs text-white"
+                      >
+                        Oui
+                      </button>
+                      <button
+                        onClick={() => setSuppressionId(null)}
+                        className="text-xs text-gray-500"
+                      >
+                        Non
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -215,3 +276,4 @@ export default function Calendrier({
     </div>
   );
 }
+
