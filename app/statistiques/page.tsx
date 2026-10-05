@@ -1,12 +1,11 @@
 import { createClient } from "../supabase-server";
 import { redirect } from "next/navigation";
+import Courbe from "./Courbe";
+import { STATUTS_REPONSE } from "../constantes";
 
 export const dynamic = "force-dynamic";
 
 const SEUIL_MINI = 5;
-
-const REPONSES = ["Entretien RH", "Proposition", "Offre acceptée", "Refus"];
-const POSITIFS = ["Entretien RH", "Proposition", "Offre acceptée"];
 
 type Ligne = {
   cle: string;
@@ -14,26 +13,6 @@ type Ligne = {
   reponses: number;
   entretiens: number;
 };
-
-function regrouper(
-  candidatures: { statut: string; [k: string]: unknown }[],
-  champ: string
-): Ligne[] {
-  const map = new Map<string, Ligne>();
-
-  for (const c of candidatures) {
-    const cle = (c[champ] as string) ?? "Non renseigné";
-    if (!map.has(cle)) {
-      map.set(cle, { cle, total: 0, reponses: 0, entretiens: 0 });
-    }
-    const l = map.get(cle)!;
-    l.total++;
-    if (REPONSES.includes(c.statut)) l.reponses++;
-    if (POSITIFS.includes(c.statut)) l.entretiens++;
-  }
-
-  return [...map.values()].sort((a, b) => b.total - a.total);
-}
 
 function pourcent(n: number, total: number) {
   if (total === 0) return "—";
@@ -48,15 +27,37 @@ export default async function Statistiques() {
 
   const { data: candidatures } = await supabase.from("candidatures").select("*");
   const { data: historique } = await supabase.from("historique_statuts").select("*");
+  const { data: entretiensData } = await supabase
+    .from("entretiens")
+    .select("candidature_id");
 
   const liste = candidatures ?? [];
   const envoyees = liste.filter((c) => c.statut !== "À envoyer");
-  const reponses = liste.filter((c) => REPONSES.includes(c.statut));
-  const entretiens = liste.filter((c) => POSITIFS.includes(c.statut));
+
+  const idsAvecEntretien = new Set<string>();
+  for (const e of entretiensData ?? []) {
+    idsAvecEntretien.add(e.candidature_id);
+  }
+  for (const h of historique ?? []) {
+    if (STATUTS_REPONSE.includes(h.nouveau_statut) && h.nouveau_statut !== "Refus") {
+      idsAvecEntretien.add(h.candidature_id);
+    }
+  }
+
+  const idsAvecReponse = new Set<string>();
+  for (const h of historique ?? []) {
+    if (STATUTS_REPONSE.includes(h.nouveau_statut)) {
+      idsAvecReponse.add(h.candidature_id);
+    }
+  }
+  for (const c of liste) {
+    if (STATUTS_REPONSE.includes(c.statut)) idsAvecReponse.add(c.id);
+  }
+
+  const acceptees = liste.filter((c) => c.statut === "Offre acceptée");
   const propositions = liste.filter((c) =>
     ["Proposition", "Offre acceptée"].includes(c.statut)
   );
-  const acceptees = liste.filter((c) => c.statut === "Offre acceptée");
 
   const assez = envoyees.length >= SEUIL_MINI;
 
@@ -67,7 +68,7 @@ export default async function Statistiques() {
       if (!c.date_envoi) continue;
       const premiereReponse = historique
         .filter(
-          (h) => h.candidature_id === c.id && REPONSES.includes(h.nouveau_statut)
+          (h) => h.candidature_id === c.id && STATUTS_REPONSE.includes(h.nouveau_statut)
         )
         .sort((a, b) => (a.date_evenement > b.date_evenement ? 1 : -1))[0];
 
@@ -89,12 +90,12 @@ export default async function Statistiques() {
     { label: "Envoyées", valeur: envoyees.length },
     {
       label: "Taux de réponse",
-      valeur: assez ? pourcent(reponses.length, envoyees.length) : "—",
+      valeur: assez ? pourcent(idsAvecReponse.size, envoyees.length) : "—",
       note: !assez ? `${SEUIL_MINI} envois min.` : undefined,
     },
     {
       label: "Taux d'entretien",
-      valeur: assez ? pourcent(entretiens.length, envoyees.length) : "—",
+      valeur: assez ? pourcent(idsAvecEntretien.size, envoyees.length) : "—",
       note: !assez ? `${SEUIL_MINI} envois min.` : undefined,
     },
     {
@@ -104,12 +105,57 @@ export default async function Statistiques() {
     },
   ];
 
-  const parSource = regrouper(liste, "source").filter((l) => l.total >= 3);
+  const mapSource = new Map<string, Ligne>();
+  for (const c of liste) {
+    const cle = c.source ?? "Non renseigné";
+    if (!mapSource.has(cle)) {
+      mapSource.set(cle, { cle, total: 0, reponses: 0, entretiens: 0 });
+    }
+    const l = mapSource.get(cle)!;
+    l.total++;
+    if (idsAvecReponse.has(c.id)) l.reponses++;
+    if (idsAvecEntretien.has(c.id)) l.entretiens++;
+  }
+
+  const parSource = [...mapSource.values()]
+    .sort((a, b) => b.total - a.total)
+    .filter((l) => l.total >= 3);
+      const MOIS_COURTS = [
+    "janv.", "févr.", "mars", "avr.", "mai", "juin",
+    "juil.", "août", "sept.", "oct.", "nov.", "déc.",
+  ];
+
+  const serie: { label: string; envois: number; reponses: number }[] = [];
+  const maintenant = new Date();
+
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(maintenant.getFullYear(), maintenant.getMonth() - i, 1);
+    const fin = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+
+    const envois = liste.filter((c) => {
+      if (!c.date_envoi) return false;
+      const envoi = new Date(c.date_envoi);
+      return envoi >= d && envoi < fin;
+    }).length;
+
+    const reponses = (historique ?? []).filter((h) => {
+      if (!STATUTS_REPONSE.includes(h.nouveau_statut)) return false;
+      const date = new Date(h.date_evenement);
+      return date >= d && date < fin;
+    }).length;
+
+    serie.push({
+      label: `${MOIS_COURTS[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`,
+      envois,
+      reponses,
+    });
+  }
     return (
     <div>
       <h1 className="text-2xl font-bold md:text-3xl">Statistiques</h1>
       <p className="mt-1 text-sm text-gray-600">
-        {liste.length} candidature{liste.length > 1 ? "s" : ""} au total
+        {liste.length} candidature{liste.length > 1 ? "s" : ""} enregistrée
+        {liste.length > 1 ? "s" : ""}
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -178,6 +224,10 @@ export default async function Statistiques() {
           </ul>
         )}
       </section>
+
+      <div className="mt-4">
+        <Courbe serie={serie} />
+      </div>
     </div>
   );
 }
