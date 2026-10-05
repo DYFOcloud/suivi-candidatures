@@ -48,7 +48,10 @@ export default async function RootLayout({
               </header>
 
               <main className="flex-1 p-4 pb-20 md:p-8 md:pb-8">{children}</main>
-              <Footer />
+
+              <div className="hidden md:block">
+                <Footer />
+              </div>
             </div>
 
             <NavMobile />
