@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../supabase";
 import ImportOffre, { DonneesOffre } from "./ImportOffre";
+import AlerteDoublon, { Doublon } from "./AlerteDoublon";
 import {
   STATUTS,
   CONTRATS,
@@ -11,6 +12,14 @@ import {
   SOURCES,
   PERIODICITES,
 } from "../constantes";
+
+function normaliser(texte: string) {
+  return texte
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
 
 export default function Nouvelle() {
   const [entreprise, setEntreprise] = useState("");
@@ -31,6 +40,7 @@ export default function Nouvelle() {
   const [offreTexte, setOffreTexte] = useState("");
   const [erreur, setErreur] = useState("");
   const [loading, setLoading] = useState(false);
+  const [doublons, setDoublons] = useState<Doublon[] | null>(null);
 
   const router = useRouter();
 
@@ -50,12 +60,50 @@ export default function Nouvelle() {
     setOffreTexte(texteBrut);
   }
 
-  async function handleSubmit() {
+  async function verifier() {
     if (!entreprise || !poste) {
       setErreur("Entreprise et poste sont obligatoires.");
       return;
     }
 
+    setErreur("");
+    setLoading(true);
+
+    const supabase = createClient();
+    const { data: existantes } = await supabase
+      .from("candidatures")
+      .select("id, entreprise, poste, statut, date_envoi, created_at");
+
+    const cibleEntreprise = normaliser(entreprise);
+    const cibleReference = reference ? normaliser(reference) : "";
+
+    const trouves = (existantes ?? []).filter((c) => {
+      const memeEntreprise = normaliser(c.entreprise) === cibleEntreprise;
+      if (!memeEntreprise) return false;
+      return true;
+    });
+
+    const parReference = cibleReference
+      ? (existantes ?? []).filter(
+          (c) => c.poste && normaliser(c.poste) === normaliser(poste)
+        )
+      : [];
+
+    const tous = [...trouves];
+    for (const p of parReference) {
+      if (!tous.some((t) => t.id === p.id)) tous.push(p);
+    }
+
+    setLoading(false);
+
+    if (tous.length > 0) {
+      setDoublons(tous as Doublon[]);
+    } else {
+      enregistrer();
+    }
+  }
+
+  async function enregistrer() {
     setLoading(true);
     setErreur("");
 
@@ -90,6 +138,7 @@ export default function Nouvelle() {
     if (error) {
       setErreur(error.message);
       setLoading(false);
+      setDoublons(null);
     } else {
       router.push("/candidatures");
       router.refresh();
@@ -219,14 +268,30 @@ export default function Nouvelle() {
 
         {erreur && <p className="text-sm text-red-600">{erreur}</p>}
 
-        <div className="flex gap-3">
-          <button onClick={handleSubmit} disabled={loading} className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50">
-            {loading ? "Enregistrement..." : "Enregistrer"}
-          </button>
-          <button onClick={() => router.push("/candidatures")} className="rounded border px-4 py-2 text-sm">
-            Annuler
-          </button>
-        </div>
+        {doublons ? (
+          <AlerteDoublon
+            doublons={doublons}
+            onConfirmer={enregistrer}
+            onAnnuler={() => setDoublons(null)}
+            loading={loading}
+          />
+        ) : (
+          <div className="flex gap-3">
+            <button
+              onClick={verifier}
+              disabled={loading}
+              className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+            >
+              {loading ? "Vérification..." : "Enregistrer"}
+            </button>
+            <button
+              onClick={() => router.push("/candidatures")}
+              className="rounded border px-4 py-2 text-sm"
+            >
+              Annuler
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
