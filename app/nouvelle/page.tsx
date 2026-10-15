@@ -38,6 +38,7 @@ export default function Nouvelle() {
   const [urlOffre, setUrlOffre] = useState("");
   const [notes, setNotes] = useState("");
   const [offreTexte, setOffreTexte] = useState("");
+  const [offreOuverte, setOffreOuverte] = useState(false);
   const [erreur, setErreur] = useState("");
   const [loading, setLoading] = useState(false);
   const [doublons, setDoublons] = useState<Doublon[] | null>(null);
@@ -75,29 +76,15 @@ export default function Nouvelle() {
       .select("id, entreprise, poste, statut, date_envoi, created_at");
 
     const cibleEntreprise = normaliser(entreprise);
-    const cibleReference = reference ? normaliser(reference) : "";
 
-    const trouves = (existantes ?? []).filter((c) => {
-      const memeEntreprise = normaliser(c.entreprise) === cibleEntreprise;
-      if (!memeEntreprise) return false;
-      return true;
-    });
-
-    const parReference = cibleReference
-      ? (existantes ?? []).filter(
-          (c) => c.poste && normaliser(c.poste) === normaliser(poste)
-        )
-      : [];
-
-    const tous = [...trouves];
-    for (const p of parReference) {
-      if (!tous.some((t) => t.id === p.id)) tous.push(p);
-    }
+    const trouves = (existantes ?? []).filter(
+      (c) => normaliser(c.entreprise) === cibleEntreprise
+    );
 
     setLoading(false);
 
-    if (tous.length > 0) {
-      setDoublons(tous as Doublon[]);
+    if (trouves.length > 0) {
+      setDoublons(trouves as Doublon[]);
     } else {
       enregistrer();
     }
@@ -264,6 +251,35 @@ export default function Nouvelle() {
         <div>
           <label className={label}>Notes</label>
           <textarea className={champ} rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </div>
+
+        <div className="rounded-lg border bg-gray-50">
+          <button
+            onClick={() => setOffreOuverte(!offreOuverte)}
+            className="flex w-full items-center justify-between px-4 py-3 text-left"
+          >
+            <div>
+              <p className="text-sm font-medium">Texte de l&apos;offre</p>
+              <p className="text-xs text-gray-500">
+                {offreTexte
+                  ? `${offreTexte.length} caractères enregistrés`
+                  : "Nécessaire pour l'analyse de correspondance et la préparation d'entretien"}
+              </p>
+            </div>
+            <span className="text-gray-400">{offreOuverte ? "−" : "+"}</span>
+          </button>
+
+          {offreOuverte && (
+            <div className="px-4 pb-4">
+              <textarea
+                className={champ}
+                rows={8}
+                value={offreTexte}
+                onChange={(e) => setOffreTexte(e.target.value)}
+                placeholder="Collez ici l'annonce complète, telle qu'elle est publiée."
+              />
+            </div>
+          )}
         </div>
 
         {erreur && <p className="text-sm text-red-600">{erreur}</p>}

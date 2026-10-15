@@ -125,12 +125,13 @@ export default async function FicheCandidature({
       analyseInitiale={c.analyse_json}
       cvPresent={!!c.cv_path}
       offrePresente={!!c.offre_texte}
+      offreTexte={c.offre_texte}
     />
   );
 
   const blocEntretiens = <Entretiens candidatureId={c.id} entretiens={entretiens ?? []} />;
   const blocHistorique = <Historique evenements={historique ?? []} />;
-  return (
+    return (
     <div>
       <Link href="/candidatures" className="text-sm text-gray-500 hover:underline">
         Retour aux candidatures

@@ -22,17 +22,19 @@ export default function Correspondance({
   analyseInitiale,
   cvPresent,
   offrePresente,
+  offreTexte,
 }: {
   id: string;
   analyseInitiale: Analyse | null;
   cvPresent: boolean;
   offrePresente: boolean;
+  offreTexte: string | null;
 }) {
   const [analyse, setAnalyse] = useState<Analyse | null>(analyseInitiale);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState("");
   const [formOuvert, setFormOuvert] = useState(false);
-  const [texte, setTexte] = useState("");
+  const [texte, setTexte] = useState(offreTexte ?? "");
   const [sauvegarde, setSauvegarde] = useState(false);
   const router = useRouter();
 
@@ -57,7 +59,6 @@ export default function Correspondance({
       setErreur(error.message);
     } else {
       setFormOuvert(false);
-      setTexte("");
       router.refresh();
     }
   }
@@ -87,58 +88,70 @@ export default function Correspondance({
 
     setLoading(false);
   }
+
+  const formulaireOffre = (
+    <div>
+      <p className="text-sm font-medium">Texte de l&apos;offre</p>
+      <p className="mt-1 text-xs text-gray-500">
+        Sur la page de l&apos;annonce : Ctrl+A puis Ctrl+C, et collez ici.
+      </p>
+      <textarea
+        value={texte}
+        onChange={(e) => setTexte(e.target.value)}
+        rows={8}
+        className="mt-2 w-full rounded border px-3 py-2 text-sm"
+        placeholder="Collez le texte de l'offre..."
+      />
+      <div className="mt-3 flex gap-2">
+        <button
+          onClick={enregistrerOffre}
+          disabled={sauvegarde}
+          className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+        >
+          {sauvegarde ? "Enregistrement..." : "Enregistrer"}
+        </button>
+        <button
+          onClick={() => {
+            setFormOuvert(false);
+            setTexte(offreTexte ?? "");
+            setErreur("");
+          }}
+          className="rounded border px-4 py-2 text-sm"
+        >
+          Annuler
+        </button>
+      </div>
+      {erreur && <p className="mt-2 text-sm text-red-600">{erreur}</p>}
+    </div>
+  );
     return (
     <section className="rounded-lg border">
-      <h2 className="border-b px-5 py-3 font-semibold">Correspondance CV / offre</h2>
+      <div className="flex items-center justify-between border-b px-5 py-3">
+        <h2 className="font-semibold">Correspondance CV / offre</h2>
+        {offrePresente && !formOuvert && (
+          <button
+            onClick={() => setFormOuvert(true)}
+            className="text-xs text-gray-500 hover:underline"
+          >
+            Modifier le texte de l&apos;offre
+          </button>
+        )}
+      </div>
 
-      {!offrePresente ? (
+      {formOuvert ? (
+        <div className="px-5 py-4">{formulaireOffre}</div>
+      ) : !offrePresente ? (
         <div className="px-5 py-4">
-          {formOuvert ? (
-            <div>
-              <p className="text-sm font-medium">Texte de l&apos;offre</p>
-              <p className="mt-1 text-xs text-gray-500">
-                Sur la page de l&apos;annonce : Ctrl+A puis Ctrl+C, et collez ici.
-              </p>
-              <textarea
-                value={texte}
-                onChange={(e) => setTexte(e.target.value)}
-                rows={6}
-                className="mt-2 w-full rounded border px-3 py-2 text-sm"
-                placeholder="Collez le texte de l'offre..."
-              />
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={enregistrerOffre}
-                  disabled={sauvegarde}
-                  className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
-                >
-                  {sauvegarde ? "Enregistrement..." : "Enregistrer"}
-                </button>
-                <button
-                  onClick={() => {
-                    setFormOuvert(false);
-                    setErreur("");
-                  }}
-                  className="rounded border px-4 py-2 text-sm"
-                >
-                  Annuler
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
-                           <p className="text-sm text-gray-600">
-                Copiez-collez l&apos;annonce complète telle qu&apos;elle est
-                publiée pour obtenir votre score de correspondance.
-              </p>
-              <button
-                onClick={() => setFormOuvert(true)}
-                className="mt-3 rounded bg-black px-4 py-2 text-sm text-white"
-              >
-                Coller le texte de l&apos;offre
-              </button>
-            </div>
-          )}
+          <p className="text-sm text-gray-600">
+            Copiez-collez l&apos;annonce complète telle qu&apos;elle est publiée
+            pour obtenir votre score de correspondance.
+          </p>
+          <button
+            onClick={() => setFormOuvert(true)}
+            className="mt-3 rounded bg-black px-4 py-2 text-sm text-white"
+          >
+            Ajouter le texte de l&apos;offre
+          </button>
           {erreur && <p className="mt-2 text-sm text-red-600">{erreur}</p>}
         </div>
       ) : !cvPresent ? (
@@ -157,7 +170,7 @@ export default function Correspondance({
           {erreur && <p className="mt-2 text-sm text-red-600">{erreur}</p>}
         </div>
       ) : (
-                <div className="px-5 py-4">
+        <div className="px-5 py-4">
           <div className="flex items-baseline gap-2">
             <span className={`text-4xl font-bold ${couleurScore(analyse.score)}`}>
               {analyse.score}
