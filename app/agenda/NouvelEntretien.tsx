@@ -50,11 +50,15 @@ export default function NouvelEntretien({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    const [annee, mois, jourNum] = jour.split("-").map(Number);
+    const [h, m] = heure.split(":").map(Number);
+    const dateLocale = new Date(annee, mois - 1, jourNum, h, m, 0);
+
     const { error } = await supabase.from("entretiens").insert({
       candidature_id: candidatureId,
       user_id: user.id,
       etape,
-      date_entretien: `${jour}T${heure}:00`,
+      date_entretien: dateLocale.toISOString(),
       interlocuteur: interlocuteur || null,
       format: format || null,
     });
