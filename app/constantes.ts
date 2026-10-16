@@ -3,6 +3,7 @@ export const STATUTS = [
   "Envoyée",
   "Contacté par un recruteur",
   "Entretien RH",
+  "En process",
   "Proposition",
   "Offre acceptée",
   "Refus",
@@ -15,9 +16,18 @@ export const CONTRATS = [
   "Alternance",
   "Intérim",
   "Freelance",
+  "VIE",
+  "VIA",
 ];
 
-export const CONTRATS_AVEC_DUREE = ["CDD", "Stage", "Alternance", "Intérim"];
+export const CONTRATS_AVEC_DUREE = [
+  "CDD",
+  "Stage",
+  "Alternance",
+  "Intérim",
+  "VIE",
+  "VIA",
+];
 
 export const SOURCES = [
   "LinkedIn",
@@ -56,6 +66,7 @@ export const COULEURS_STATUT: Record<string, string> = {
   "Envoyée": "bg-blue-100 text-blue-700",
   "Contacté par un recruteur": "bg-sky-100 text-sky-700",
   "Entretien RH": "bg-violet-100 text-violet-700",
+  "En process": "bg-violet-600 text-white",
   "Proposition": "bg-green-100 text-green-700",
   "Offre acceptée": "bg-emerald-600 text-white",
   "Refus": "bg-red-100 text-red-700",
@@ -63,6 +74,7 @@ export const COULEURS_STATUT: Record<string, string> = {
 
 export const STATUTS_REPONSE = [
   "Entretien RH",
+  "En process",
   "Proposition",
   "Offre acceptée",
   "Refus",
@@ -70,6 +82,7 @@ export const STATUTS_REPONSE = [
 
 export const STATUTS_POSITIFS = [
   "Entretien RH",
+  "En process",
   "Proposition",
   "Offre acceptée",
 ];

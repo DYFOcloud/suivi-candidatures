@@ -1,12 +1,21 @@
 import { createClient } from "../supabase-server";
 import { redirect } from "next/navigation";
 import BoutonImprimer from "./BoutonImprimer";
+import { formatSalaire } from "../constantes";
 
 export const dynamic = "force-dynamic";
 
 function formatDate(d: string | null) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("fr-FR");
+}
+
+function formatDateLongue(d: Date) {
+  return d.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 function formatDateHeure(d: string | null) {
@@ -20,23 +29,66 @@ function formatDateHeure(d: string | null) {
   });
 }
 
-export default async function Rapport() {
+function cleJour(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export default async function Rapport({
+  searchParams,
+}: {
+  searchParams: Promise<{ mois?: string }>;
+}) {
+  const { mois } = await searchParams;
+  const nbMois = ["1", "6", "12"].includes(mois ?? "") ? Number(mois) : 12;
+
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const aujourdhui = new Date();
+  const inscription = new Date(user.created_at);
+
+  let debut = new Date(
+    aujourdhui.getFullYear(),
+    aujourdhui.getMonth() - (nbMois - 1),
+    1
+  );
+
+  if (inscription > debut) {
+    debut = new Date(
+      inscription.getFullYear(),
+      inscription.getMonth(),
+      inscription.getDate()
+    );
+  }
+
+  const fin = aujourdhui;
+
+  const debutCle = cleJour(debut);
+  const finCle = cleJour(fin);
+
   const { data: dataCandidatures } = await supabase
     .from("candidatures")
     .select("*")
-    .order("date_envoi", { ascending: false, nullsFirst: false });
+    .gte("date_envoi", debutCle)
+    .lte("date_envoi", finCle)
+    .order("date_envoi", { ascending: false });
+
+  const { data: dataSansDate } = await supabase
+    .from("candidatures")
+    .select("*")
+    .is("date_envoi", null)
+    .gte("created_at", debut.toISOString())
+    .order("created_at", { ascending: false });
 
   const { data: dataEntretiens } = await supabase
     .from("entretiens")
     .select("*, candidatures(entreprise, poste)")
+    .gte("date_entretien", debut.toISOString())
     .order("date_entretien", { ascending: false });
 
-  const candidatures = dataCandidatures ?? [];
+  const candidatures = [...(dataCandidatures ?? []), ...(dataSansDate ?? [])];
   const entretiens = dataEntretiens ?? [];
 
   const maintenant = Date.now();
@@ -47,15 +99,8 @@ export default async function Rapport() {
     (e) => e.date_entretien && new Date(e.date_entretien).getTime() < maintenant
   );
 
-  const dates = candidatures
-    .map((c) => c.date_envoi)
-    .filter(Boolean)
-    .sort();
-  const periode =
-    dates.length > 0
-      ? `du ${formatDate(dates[0])} au ${formatDate(dates[dates.length - 1])}`
-      : "";
-        return (
+  const libellePeriode = `du ${formatDateLongue(debut)} au ${formatDateLongue(fin)}`;
+    return (
     <div className="mx-auto max-w-4xl px-6 py-8 print:px-0 print:py-0">
       <div className="print:hidden">
         <BoutonImprimer />
@@ -64,9 +109,9 @@ export default async function Rapport() {
       <header className="mt-6 border-b pb-6 print:mt-0">
         <h1 className="text-3xl font-bold">Rapport de candidatures</h1>
         <p className="mt-2 text-sm text-gray-600">{user.email}</p>
-        {periode && <p className="text-sm text-gray-600">Période {periode}</p>}
+        <p className="text-sm text-gray-600">Période {libellePeriode}</p>
         <p className="mt-1 text-xs text-gray-400">
-          Édité le {new Date().toLocaleDateString("fr-FR")} · Joply
+          Édité le {formatDate(cleJour(aujourdhui))} · Joply
         </p>
       </header>
 
@@ -76,7 +121,9 @@ export default async function Rapport() {
         </h2>
 
         {candidatures.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">Aucune candidature.</p>
+          <p className="mt-3 text-sm text-gray-500">
+            Aucune candidature sur cette période.
+          </p>
         ) : (
           <table className="mt-4 w-full border-collapse text-sm">
             <thead>
@@ -95,6 +142,11 @@ export default async function Rapport() {
                   <td className="py-2 pr-3">{c.poste}</td>
                   <td className="py-2 pr-3 text-gray-600">
                     {c.type_contrat ?? "—"}
+                    {c.duree_contrat && (
+                      <span className="block text-xs text-gray-400">
+                        {c.duree_contrat}
+                      </span>
+                    )}
                   </td>
                   <td className="py-2 pr-3 text-gray-600">
                     {formatDate(c.date_envoi)}

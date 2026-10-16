@@ -3,16 +3,17 @@
 type Point = { label: string; envois: number; reponses: number };
 
 const LARGEUR = 680;
-const HAUTEUR = 220;
-const MARGE_G = 32;
+const HAUTEUR = 240;
+const MARGE_G = 34;
 const MARGE_D = 12;
 const MARGE_H = 16;
-const MARGE_B = 32;
+const MARGE_B = 34;
 
 export default function Courbe({ serie }: { serie: Point[] }) {
-  const total = serie.reduce((a, p) => a + p.envois, 0);
+  const totalEnvois = serie.reduce((a, p) => a + p.envois, 0);
+  const totalReponses = serie.reduce((a, p) => a + p.reponses, 0);
 
-  if (total === 0) {
+  if (totalEnvois === 0) {
     return (
       <section className="rounded-lg border">
         <div className="border-b px-4 py-3">
@@ -32,25 +33,26 @@ export default function Courbe({ serie }: { serie: Point[] }) {
   const largeurUtile = LARGEUR - MARGE_G - MARGE_D;
   const hauteurUtile = HAUTEUR - MARGE_H - MARGE_B;
 
-  function x(i: number) {
-    if (serie.length === 1) return MARGE_G + largeurUtile / 2;
-    return MARGE_G + (i * largeurUtile) / (serie.length - 1);
-  }
+  const largeurGroupe = largeurUtile / serie.length;
+  const largeurBarre = Math.min(14, (largeurGroupe - 6) / 2);
 
   function y(valeur: number) {
     return MARGE_H + hauteurUtile - (valeur / max) * hauteurUtile;
   }
 
-  function chemin(cle: "envois" | "reponses") {
-    return serie
-      .map((p, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(p[cle])}`)
-      .join(" ");
+  function hauteur(valeur: number) {
+    if (valeur === 0) return 0;
+    return (valeur / max) * hauteurUtile;
+  }
+
+  function xGroupe(i: number) {
+    return MARGE_G + i * largeurGroupe + largeurGroupe / 2;
   }
 
   const graduations = Array.from({ length: paliers + 1 }, (_, i) =>
     Math.round((max / paliers) * i)
   );
-    return (
+   return (
     <section className="rounded-lg border">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
         <div>
@@ -59,12 +61,12 @@ export default function Courbe({ serie }: { serie: Point[] }) {
         </div>
         <div className="flex gap-4 text-xs">
           <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-4 rounded bg-violet-600" />
-            <span className="text-gray-600">Candidatures envoyées</span>
+            <span className="h-2.5 w-2.5 rounded-sm bg-blue-600" />
+            <span className="text-gray-600">Envoyées ({totalEnvois})</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-4 rounded bg-emerald-600" />
-            <span className="text-gray-600">Réponses reçues</span>
+            <span className="h-2.5 w-2.5 rounded-sm bg-emerald-600" />
+            <span className="text-gray-600">Réponses ({totalReponses})</span>
           </span>
         </div>
       </div>
@@ -81,7 +83,7 @@ export default function Courbe({ serie }: { serie: Point[] }) {
                 y1={y(g)}
                 x2={LARGEUR - MARGE_D}
                 y2={y(g)}
-                stroke="#F3F4F6"
+                stroke="#E5E7EB"
                 strokeWidth="1"
               />
               <text
@@ -96,44 +98,44 @@ export default function Courbe({ serie }: { serie: Point[] }) {
             </g>
           ))}
 
-          <path
-            d={chemin("envois")}
-            fill="none"
-            stroke="#7C3AED"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          <path
-            d={chemin("reponses")}
-            fill="none"
-            stroke="#059669"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-
-          {serie.map((p, i) => (
-            <g key={i}>
-              <circle cx={x(i)} cy={y(p.envois)} r="3" fill="#7C3AED" />
-              <circle cx={x(i)} cy={y(p.reponses)} r="3" fill="#059669" />
-              <title>
-                {p.label} — {p.envois} envoi{p.envois > 1 ? "s" : ""}, {p.reponses}{" "}
-                réponse{p.reponses > 1 ? "s" : ""}
-              </title>
-            </g>
-          ))}
+          {serie.map((p, i) => {
+            const centre = xGroupe(i);
+            return (
+              <g key={i}>
+                <rect
+                  x={centre - largeurBarre - 1}
+                  y={y(p.envois)}
+                  width={largeurBarre}
+                  height={hauteur(p.envois)}
+                  rx="2"
+                  fill="#2563EB"
+                />
+                <rect
+                  x={centre + 1}
+                  y={y(p.reponses)}
+                  width={largeurBarre}
+                  height={hauteur(p.reponses)}
+                  rx="2"
+                  fill="#059669"
+                />
+                <title>
+                  {p.envois} envoi{p.envois > 1 ? "s" : ""} · {p.reponses}{" "}
+                  réponse{p.reponses > 1 ? "s" : ""}
+                </title>
+              </g>
+            );
+          })}
 
           {serie.map((p, i) => (
             <text
               key={i}
-              x={x(i)}
-              y={HAUTEUR - 10}
+              x={xGroupe(i)}
+              y={HAUTEUR - 12}
               textAnchor="middle"
               fontSize="10"
               fill="#9CA3AF"
             >
-              {i % 2 === 0 ? p.label : ""}
+              {p.label}
             </text>
           ))}
         </svg>
@@ -141,3 +143,4 @@ export default function Courbe({ serie }: { serie: Point[] }) {
     </section>
   );
 }
+ 
