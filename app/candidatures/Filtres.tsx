@@ -10,7 +10,7 @@ export default function Filtres() {
 
   const statut = params.get("statut") ?? "";
   const recherche = params.get("q") ?? "";
-  const tri = params.get("tri") ?? "recent";
+  const tri = params.get("tri") ?? "envoi";
   const archivees = params.get("archivees") ?? "";
 
   function modifier(cle: string, valeur: string) {
@@ -54,8 +54,9 @@ export default function Filtres() {
           onChange={(e) => modifier("tri", e.target.value)}
           className="flex-1 rounded border px-3 py-2 text-sm md:flex-none"
         >
-          <option value="recent">Plus récentes</option>
-          <option value="ancien">Plus anciennes</option>
+          <option value="envoi">Date d&apos;envoi</option>
+          <option value="recent">Ajout récent</option>
+          <option value="ancien">Ajout ancien</option>
           <option value="entreprise">Entreprise (A-Z)</option>
         </select>
 

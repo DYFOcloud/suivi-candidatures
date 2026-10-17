@@ -41,9 +41,17 @@ export default async function Candidatures({
   if (statut) requete = requete.eq("statut", statut);
   if (q) requete = requete.or(`entreprise.ilike.%${q}%,poste.ilike.%${q}%`);
 
-  if (tri === "ancien") requete = requete.order("created_at", { ascending: true });
-  else if (tri === "entreprise") requete = requete.order("entreprise", { ascending: true });
-  else requete = requete.order("created_at", { ascending: false });
+  if (tri === "ancien") {
+    requete = requete.order("created_at", { ascending: true });
+  } else if (tri === "entreprise") {
+    requete = requete.order("entreprise", { ascending: true });
+  } else if (tri === "recent") {
+    requete = requete.order("created_at", { ascending: false });
+  } else {
+    requete = requete
+      .order("date_envoi", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false });
+  }
 
   const { data: candidatures, error } = await requete;
 
@@ -67,12 +75,20 @@ export default async function Candidatures({
             {(candidatures?.length ?? 0) > 1 ? "s" : ""}
           </p>
         </div>
-        <Link
-          href="/nouvelle"
-          className="rounded bg-black px-4 py-2 text-sm text-white"
-        >
-          + Nouvelle
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/import"
+            className="rounded border px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            Importer
+          </Link>
+          <Link
+            href="/nouvelle"
+            className="rounded bg-black px-4 py-2 text-sm text-white"
+          >
+            + Nouvelle
+          </Link>
+        </div>
       </div>
 
       <Suspense fallback={<div className="mt-6 h-9" />}>
